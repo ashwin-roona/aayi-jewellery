@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AuraNova — Luxury Gold & Silver Jewellery</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Josefin+Sans:wght@200;300;400;600&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<style>
+/* ═══ TOKENS ═══ */
+:root{--g:#C9A84C;--gl:#E8D48B;--gd:#8B6914;--gdd:#4A2800;--s:#C8C8C8;--tr:all .42s cubic-bezier(.25,.46,.45,.94);}
+[data-theme="dark"]{--bg:#080604;--bg2:#100C08;--bg3:#1A1410;--tx:#F5F0E8;--tx2:#B89060;--card:rgba(16,12,8,.97);--nav:rgba(6,4,2,.95);--brd:rgba(201,168,76,.18);}
+[data-theme="light"]{--bg:#FDFAF4;--bg2:#F5EFE3;--bg3:#EDE3D0;--tx:#1A1208;--tx2:#6B5020;--card:rgba(255,252,246,.98);--nav:rgba(253,250,244,.97);--brd:rgba(139,105,20,.22);}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Josefin Sans',sans-serif;background:var(--bg);color:var(--tx);transition:background .5s,color .5s;overflow-x:hidden;}
+h1,h2,h3,h4,h5{font-family:'Cormorant Garamond',serif;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:var(--bg2);}::-webkit-scrollbar-thumb{background:var(--g);border-radius:3px;}
+/* ═══ SHIMMER ═══ */
+@keyframes shimmer{0%{background-position:-300% center;}100%{background-position:300% center;}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeInDown{from{opacity:0;transform:translateY(-30px);}to{opacity:1;transform:translateY(0);}}
+@keyframes bounce{0%,100%{transform:translateX(-50%);}50%{transform:translateX(-50%) translateY(-10px);}}
+@keyframes ldFill{to{transform:translateX(0)}}
+@keyframes rotateSlow{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 25px rgba(201,168,76,.35);}50%{box-shadow:0 0 60px rgba(201,168,76,.75),0 0 100px rgba(201,168,76,.25);}}
+@keyframes scanLine{0%{top:-4%;}100%{top:104%;}}
+/* ═══ LOADER ═══ */
+#loader{position:fixed;inset:0;z-index:99999;background:#080604;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2rem;transition:opacity .9s,visibility .9s;}
+#loader.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+.ld-ring{width:90px;height:90px;border:1px solid rgba(201,168,76,.3);border-top-color:var(--g);border-radius:50%;animation:rotateSlow 1.6s linear infinite;}
+.ld-logo{font-family:'Cormorant Garamond',serif;font-size:3rem;letter-spacing:10px;background:linear-gradient(90deg,var(--gd),var(--g),var(--gl),var(--g),var(--gd));background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 2.5s linear infinite;}
+.ld-bar{width:220px;height:1px;background:rgba(201,168,76,.12);overflow:hidden;position:relative;}
+.ld-bar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--g),transparent);transform:translateX(-100%);animation:ldFill 1.8s ease .4s forwards;}
+.ld-txt{font-size:.6rem;letter-spacing:5px;color:rgba(201,168,76,.6);}
+/* ═══ TOAST ═══ */
+#toast{position:fixed;bottom:2rem;right:2rem;z-index:9999;background:linear-gradient(135deg,var(--gd),var(--g));color:#000;padding:.9rem 2rem;font-size:.74rem;letter-spacing:2px;font-weight:700;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transform:translateY(120px);opacity:0;transition:var(--tr);}
+#toast.show{transform:translateY(0);opacity:1;}
+/* ═══ NAV ═══ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;height:72px;
+  background:var(--nav);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+  border-bottom:1px solid var(--brd);
+  padding:0 5%;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;
+  transition:var(--tr);
+  /* prevent nav children from overflowing */
+  min-width:0;
+}
+.nav-logo{
+  font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:600;
+  letter-spacing:5px;cursor:pointer;flex-shrink:0;
+  background:linear-gradient(90deg,var(--gd),var(--g),var(--gl),var(--g),var(--gd));
+  background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:shimmer 5s linear infinite;
+  white-space:nowrap;
+}
+.nav-links{display:flex;gap:2rem;align-items:center;flex-shrink:1;min-width:0;overflow:hidden;}
+.nav-links a{
+  text-decoration:none;color:var(--tx);font-size:.68rem;letter-spacing:2px;font-weight:300;
+  position:relative;transition:var(--tr);white-space:nowrap;
+}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--g);transition:width .35s ease;}
+.nav-links a:hover{color:var(--g);}
+.nav-links a:hover::after{width:100%;}
+.nav-icons{
+  display:flex;gap:.7rem;align-items:center;
+  flex-shrink:0; /* never shrink — always visible */
+}
+.nav-icon-btn{
+  background:none;border:none;cursor:pointer;color:var(--tx);
+  font-size:1rem;padding:.4rem;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  transition:var(--tr);position:relative;flex-shrink:0;
+}
+.nav-icon-btn:hover{color:var(--g);transform:scale(1.15);}
+.cart-cnt{
+  position:absolute;top:-7px;right:-7px;background:var(--g);color:#000;
+  font-size:.5rem;width:16px;height:16px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-weight:800;
+}
+.theme-toggle{
+  background:none;border:1px solid var(--brd);cursor:pointer;color:var(--tx);
+  padding:.38rem .9rem;border-radius:20px;font-size:.64rem;letter-spacing:1px;
+  font-family:'Josefin Sans',sans-serif;transition:var(--tr);
+  flex-shrink:0;white-space:nowrap;
+}
+.theme-toggle:hover{border-color:var(--g);color:var(--g);}
+/* Hamburger — always rendered, shown via media query */
+.hamburger{
+  display:none;
+  flex-direction:column;justify-content:center;align-items:center;
+  gap:5px;cursor:pointer;background:none;border:none;
+  padding:.5rem;flex-shrink:0;
+  width:40px;height:40px;
+  border:1px solid var(--brd);border-radius:4px;
+  transition:var(--tr);
+}
+.hamburger:hover{border-color:var(--g);}
+.hamburger span{
+  width:20px;height:2px;background:var(--g);
+  display:block;border-radius:2px;transition:var(--tr);
+}
+/* ═══ MOBILE NAV ═══ */
+.mobile-nav{display:none;position:fixed;inset:0;z-index:999;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:2.5rem;}
+.mobile-nav.open{display:flex;}
+.mobile-nav a{font-size:2.5rem;font-family:'Cormorant Garamond',serif;color:var(--tx);text-decoration:none;letter-spacing:4px;transition:var(--tr);}
+.mobile-nav a:hover{color:var(--g);}
+.mob-close{position:absolute;top:1.5rem;right:1.8rem;background:none;border:none;font-size:1.8rem;color:var(--tx);cursor:pointer;}
+/* ═══ SEARCH ═══ */
+.search-ov{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.97);display:flex;align-items:flex-start;justify-content:center;padding-top:18vh;opacity:0;visibility:hidden;transition:var(--tr);}
+.search-ov.open{opacity:1;visibility:visible;}
+.search-wrap{width:640px;max-width:90%;}
+.search-big{width:100%;background:none;border:none;border-bottom:1px solid var(--g);color:#fff;font-family:'Cormorant Garamond',serif;font-size:2.8rem;padding:1rem 0;outline:none;caret-color:var(--g);}
+.search-hint{font-size:.65rem;letter-spacing:3px;color:rgba(255,255,255,.3);margin-top:1rem;}
+.search-cls{position:absolute;top:2rem;right:2rem;background:none;border:none;color:rgba(255,255,255,.5);font-size:2rem;cursor:pointer;transition:var(--tr);}
+.search-cls:hover{color:var(--g);}
+/* ═══ PAGES ═══ */
+.page{display:none;min-height:100vh;}
+.page.active{display:block;}
+#page-home{padding-top:0;}
+.page:not(#page-home){padding-top:72px;}
+/* ═══ HERO ═══ */
+.hero-section{position:relative;width:100%;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#hero-canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important;display:block;z-index:0;}
+@keyframes kenBurns{0%{transform:scale(1);}100%{transform:scale(1.12);}}
+.hero-bg-img{position:absolute;inset:0;z-index:0;background-image:url('https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=1920&q=90&fit=crop');background-size:cover;background-position:center;animation:kenBurns 8s ease-in-out infinite alternate;}
+.hero-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(135deg,rgba(8,6,4,.75) 0%,rgba(8,6,4,.5) 50%,rgba(8,6,4,.7) 100%);}
+[data-theme="light"] .hero-overlay{background:linear-gradient(135deg,rgba(253,250,244,.6) 0%,rgba(253,250,244,.3) 50%,rgba(253,250,244,.55) 100%);}
+.hero-content{position:relative;z-index:2;text-align:center;padding:2rem;max-width:960px;}
+.hero-badge{font-size:.62rem;letter-spacing:6px;color:var(--g);border:1px solid rgba(201,168,76,.5);padding:.55rem 2rem;display:inline-block;margin-bottom:2.5rem;animation:fadeInDown 1s ease .2s both;}
+.hero-title{font-size:clamp(3.5rem,9vw,8rem);font-weight:300;line-height:1.0;color:var(--tx);margin-bottom:1.5rem;animation:fadeInUp 1s ease .4s both;}
+.hero-title .gold-text{background:linear-gradient(90deg,var(--gd),var(--g),var(--gl),var(--g),var(--gd));background-size:300% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 3s linear infinite;font-style:italic;}
+.hero-sub{font-size:.82rem;letter-spacing:4px;color:rgba(255,255,255,.75);margin-bottom:3.5rem;font-weight:200;animation:fadeInUp 1s ease .6s both;}
+[data-theme="light"] .hero-sub{color:var(--tx2);}
+.hero-btns{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;animation:fadeInUp 1s ease .8s both;}
+.hero-scroll{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);z-index:2;display:flex;flex-direction:column;align-items:center;gap:.6rem;animation:bounce 2.5s ease-in-out infinite;}
+.hero-scroll span{font-size:.55rem;letter-spacing:4px;color:var(--g);}
+.hero-scroll-line{width:1px;height:44px;background:linear-gradient(to bottom,var(--g),transparent);}
+/* ═══ BUTTONS ═══ */
+.btn-primary{background:linear-gradient(135deg,var(--gd),var(--g),var(--gl));background-size:200% auto;color:#000;border:none;padding:1rem 3rem;font-family:'Josefin Sans',sans-serif;font-size:.72rem;letter-spacing:3.5px;font-weight:700;cursor:pointer;transition:var(--tr);position:relative;overflow:hidden;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);}
+.btn-primary::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);transform:translateX(-100%);transition:transform .6s ease;}
+.btn-primary:hover::after{transform:translateX(100%);}
+.btn-primary:hover{background-position:right center;transform:translateY(-3px);box-shadow:0 15px 40px rgba(201,168,76,.45);}
+.btn-outline{background:transparent;color:var(--g);border:1px solid var(--g);padding:1rem 3rem;font-family:'Josefin Sans',sans-serif;font-size:.72rem;letter-spacing:3.5px;font-weight:300;cursor:pointer;transition:var(--tr);position:relative;overflow:hidden;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);}
+.btn-outline::before{content:'';position:absolute;inset:0;background:var(--g);transform:translateX(-101%);transition:transform .4s ease;z-index:0;}
+.btn-outline:hover::before{transform:translateX(0);}
+.btn-outline:hover{color:#000;transform:translateY(-3px);}
+.btn-outline span{position:relative;z-index:1;}
+.btn-sm{flex:1;padding:.65rem;font-family:'Josefin Sans',sans-serif;font-size:.62rem;letter-spacing:2px;cursor:pointer;transition:var(--tr);border:1px solid var(--brd);background:transparent;color:var(--tx);}
+.btn-sm:hover{border-color:var(--g);color:var(--g);}
+.btn-sm.gold{background:linear-gradient(135deg,var(--gd),var(--g));color:#000;border:none;font-weight:700;}
+.btn-sm.gold:hover{background:linear-gradient(135deg,var(--g),var(--gl));transform:translateY(-1px);}
+/* ═══ STATS ═══ */
+.stats-strip{background:linear-gradient(90deg,var(--gdd),var(--gd),var(--g),var(--gd),var(--gdd));padding:2.5rem 5%;display:grid;grid-template-columns:repeat(4,1fr);text-align:center;position:relative;overflow:hidden;}
+.stats-strip::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:shimmer 4s linear infinite;}
+.stat-item{padding:0 2rem;border-right:1px solid rgba(0,0,0,.12);}
+.stat-item:last-child{border:none;}
+.stat-item h3{font-size:2.8rem;font-weight:300;color:#000;font-family:'Cormorant Garamond',serif;}
+.stat-item p{font-size:.59rem;letter-spacing:3px;color:rgba(0,0,0,.62);margin-top:.3rem;}
+/* ═══ SECTION ═══ */
+.section{padding:8rem 5%;}
+.sec-eye{font-size:.59rem;letter-spacing:6px;color:var(--g);display:flex;align-items:center;gap:1rem;margin-bottom:1rem;}
+.sec-eye.center{justify-content:center;}
+.sec-eye::before,.sec-eye::after{content:'';height:1px;background:var(--g);}
+.sec-eye.center::before,.sec-eye.center::after{width:36px;}
+.sec-eye.left::before,.sec-eye.left::after{display:none;}
+.sec-title{font-size:clamp(2rem,4vw,3.8rem);font-weight:300;line-height:1.15;margin-bottom:1rem;}
+.sec-line{width:50px;height:2px;background:linear-gradient(90deg,var(--g),var(--gl));margin:1.5rem 0 2rem;}
+.sec-line.center{margin:1.5rem auto 2rem;}
+.sec-sub{font-size:.84rem;color:var(--tx2);line-height:2;max-width:580px;font-weight:300;}
+.sec-header{text-align:center;max-width:720px;margin:0 auto 5rem;}
+/* ═══ PRODUCT CARD ═══ */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:2rem;}
+.product-card{background:var(--card);border:1px solid var(--brd);overflow:hidden;transition:var(--tr);cursor:pointer;position:relative;}
+.product-card:hover{transform:translateY(-10px);box-shadow:0 40px 80px rgba(0,0,0,.35),0 0 0 1px var(--g);border-color:var(--g);}
+.prod-img-wrap{position:relative;overflow:hidden;aspect-ratio:1;background:#0D0A06;}
+.prod-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s cubic-bezier(.25,.46,.45,.94),filter .5s ease;}
+.product-card:hover .prod-img{transform:scale(1.1);filter:brightness(1.08) saturate(1.15);}
+/* Image loading skeleton */
+.prod-img-wrap::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--bg2) 25%,var(--bg3) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.5s linear infinite;z-index:0;}
+.prod-img.loaded{z-index:1;position:relative;}
+.prod-badge{position:absolute;top:1rem;left:1rem;background:linear-gradient(135deg,var(--gd),var(--g));color:#000;font-size:.58rem;letter-spacing:2.5px;padding:.35rem 1rem;z-index:5;font-weight:700;}
+.prod-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 55%);opacity:0;transition:var(--tr);display:flex;align-items:flex-end;padding:1.5rem;z-index:4;}
+.product-card:hover .prod-overlay{opacity:1;}
+/* gold scan line on hover */
+.prod-img-wrap::after{content:'';position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(201,168,76,.6),transparent);top:-4%;animation:scanLine 2.5s linear infinite;z-index:3;opacity:0;transition:opacity .3s;}
+.product-card:hover .prod-img-wrap::after{opacity:1;}
+.wl-btn{position:absolute;top:.9rem;right:.9rem;z-index:6;background:rgba(0,0,0,.55);border:1px solid rgba(201,168,76,.3);width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.95rem;transition:var(--tr);opacity:0;backdrop-filter:blur(8px);}
+.product-card:hover .wl-btn{opacity:1;}
+.wl-btn:hover{background:rgba(220,50,50,.35);border-color:#e55;color:#e55;}
+.prod-info{padding:1.6rem;}
+.prod-cat{font-size:.58rem;letter-spacing:3px;color:var(--g);margin-bottom:.5rem;}
+.prod-name{font-size:1.2rem;font-family:'Cormorant Garamond',serif;margin-bottom:.6rem;line-height:1.3;}
+.prod-price{font-size:1.05rem;font-weight:600;background:linear-gradient(90deg,var(--gd),var(--g),var(--gl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.prod-actions{display:flex;gap:.5rem;padding:0 1.6rem 1.6rem;}
+/* ═══ CATEGORIES ═══ */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:1.5rem;}
+.cat-card{position:relative;overflow:hidden;cursor:pointer;aspect-ratio:.78;border:1px solid var(--brd);transition:var(--tr);}
+.cat-card:hover{transform:scale(1.03);box-shadow:0 30px 70px rgba(0,0,0,.45),0 0 0 1px var(--g);}
+.cat-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .8s ease,filter .5s ease;filter:brightness(.8) saturate(1.1);}
+.cat-card:hover .cat-img{transform:scale(1.1);filter:brightness(.65) saturate(1.3);}
+.cat-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.88) 35%,rgba(0,0,0,.15) 100%);}
+.cat-content{position:absolute;bottom:1.8rem;left:1.8rem;right:1.8rem;z-index:2;}
+.cat-content h3{font-size:1.5rem;color:#fff;margin-bottom:.4rem;font-weight:300;letter-spacing:2px;}
+.cat-content p{font-size:.6rem;letter-spacing:3px;color:var(--gl);}
+/* ═══ FEATURES ═══ */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:2rem;}
+.feat-card{padding:3rem 2rem;text-align:center;border:1px solid var(--brd);background:var(--card);transition:var(--tr);position:relative;overflow:hidden;}
+.feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--g),transparent);transform:scaleX(0);transition:transform .5s ease;}
+.feat-card:hover::before{transform:scaleX(1);}
+.feat-card:hover{transform:translateY(-8px);box-shadow:0 20px 50px rgba(0,0,0,.2);}
+.feat-icon-wrap{width:64px;height:64px;border:1px solid var(--brd);border-radius:50%;margin:0 auto 2rem;display:flex;align-items:center;justify-content:center;transition:var(--tr);font-size:1.8rem;}
+.feat-card:hover .feat-icon-wrap{border-color:var(--g);box-shadow:0 0 20px rgba(201,168,76,.3);}
+.feat-title{font-size:1.15rem;margin-bottom:1rem;}
+.feat-text{font-size:.8rem;color:var(--tx2);line-height:1.9;}
+/* ═══ PARALLAX BANNERS ═══ */
+.pb{position:relative;height:65vh;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.pb-bg{position:absolute;inset:-25% 0;z-index:0;will-change:transform;background-size:cover;background-position:center;}
+.pb-overlay{position:absolute;inset:0;z-index:1;}
+.pb-content{position:relative;z-index:2;text-align:center;color:#fff;}
+.pb-content h2{font-size:clamp(2rem,5vw,4.5rem);font-weight:300;letter-spacing:6px;text-shadow:0 4px 30px rgba(0,0,0,.5);}
+.pb-content p{font-size:.78rem;letter-spacing:4px;color:var(--gl);margin-top:1.2rem;}
+/* ═══ OFFERS ═══ */
+.off-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:2rem;}
+.off-card{background:var(--card);border:1px solid var(--brd);padding:2.8rem;position:relative;overflow:hidden;transition:var(--tr);}
+.off-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gdd),var(--g),var(--gl),var(--g),var(--gdd));background-size:200%;animation:shimmer 3s linear infinite;}
+.off-card:hover{transform:translateY(-6px);box-shadow:0 30px 60px rgba(0,0,0,.25);}
+.off-disc{font-size:2.6rem;font-family:'Cormorant Garamond',serif;font-weight:300;background:linear-gradient(90deg,var(--gd),var(--g),var(--gl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.off-title{font-size:1.3rem;margin:1rem 0 .6rem;}
+.off-desc{font-size:.8rem;color:var(--tx2);line-height:1.8;}
+.off-timer{display:flex;gap:1.2rem;margin:2rem 0;}
+.timer-box{text-align:center;}
+.timer-box span{display:block;font-size:2rem;font-family:'Cormorant Garamond',serif;background:linear-gradient(135deg,var(--g),var(--gl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:300;}
+.timer-box small{font-size:.52rem;letter-spacing:2.5px;color:var(--tx2);}
+.off-code-box{background:rgba(201,168,76,.07);border:1px dashed rgba(201,168,76,.35);padding:1rem;margin:1.5rem 0;text-align:center;}
+.off-code-lbl{font-size:.58rem;letter-spacing:3px;color:var(--tx2);}
+.off-code{font-size:1.4rem;font-family:'Cormorant Garamond',serif;letter-spacing:5px;background:linear-gradient(90deg,var(--gd),var(--g),var(--gl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+/* ═══ TESTIMONIALS ═══ */
+.test-slider{position:relative;overflow:hidden;}
+.test-track{display:flex;transition:transform .7s cubic-bezier(.25,.46,.45,.94);}
+.test-item{min-width:100%;padding:0 8%;text-align:center;}
+.test-stars{margin-bottom:2rem;letter-spacing:5px;color:var(--g);}
+.test-quote{font-size:clamp(1.1rem,2.5vw,1.8rem);font-family:'Cormorant Garamond',serif;font-style:italic;line-height:1.7;margin-bottom:2rem;}
+.test-author{font-size:.68rem;letter-spacing:4px;color:var(--g);}
+.sdots{display:flex;gap:.6rem;justify-content:center;margin-top:2.5rem;}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--brd);cursor:pointer;transition:var(--tr);}
+.sdot.active{background:var(--g);width:24px;border-radius:3px;}
+/* ═══ NEWSLETTER ═══ */
+.nl-section{padding:8rem 5%;text-align:center;position:relative;overflow:hidden;background:var(--bg2);}
+.nl-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(201,168,76,.06),transparent 70%);}
+.nl-form{display:flex;max-width:520px;margin:2.5rem auto 0;}
+.nl-input{flex:1;padding:1rem 1.5rem;background:var(--card);border:1px solid var(--brd);border-right:none;color:var(--tx);font-family:'Josefin Sans',sans-serif;font-size:.8rem;letter-spacing:1px;outline:none;transition:var(--tr);}
+.nl-input:focus{border-color:var(--g);}
+.nl-input::placeholder{color:var(--tx2);opacity:.6;}
+/* ═══ GOLD DIVIDER ═══ */
+.gdiv{display:flex;align-items:center;gap:2rem;padding:2rem 5%;}
+.gdl{flex:1;height:1px;background:linear-gradient(to right,transparent,var(--g),transparent);}
+.gdsym{color:var(--g);font-size:.75rem;letter-spacing:4px;white-space:nowrap;}
+/* ═══ ABOUT ═══ */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;}
+.about-img-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.abt-img-wrap{overflow:hidden;border:1px solid var(--brd);}
+.abt-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .7s ease,filter .4s ease;filter:brightness(.9) saturate(1.1);}
+.abt-img-wrap:hover .abt-img{transform:scale(1.06);filter:brightness(1) saturate(1.2);}
+.tl{position:relative;padding-left:0;}
+.tl::before{content:'';position:absolute;left:18px;top:8px;bottom:8px;width:1px;background:linear-gradient(to bottom,var(--g),transparent);}
+.tl-item{display:flex;gap:2.5rem;margin-bottom:2.8rem;padding-left:46px;position:relative;}
+.tl-dot{position:absolute;left:12px;top:5px;width:12px;height:12px;border:2px solid var(--g);background:var(--bg);border-radius:50%;}
+.tl-yr{font-size:.6rem;letter-spacing:2.5px;color:var(--g);margin-bottom:.4rem;}
+.tl-title{font-size:1.05rem;margin-bottom:.4rem;}
+.tl-text{font-size:.8rem;color:var(--tx2);line-height:1.8;}
+/* ═══ CART ═══ */
+.cart-page{padding:8rem 5% 6rem;}
+.cart-container{display:grid;grid-template-columns:1fr 360px;gap:3rem;}
+.cart-item{display:grid;grid-template-columns:96px 1fr auto;gap:1.5rem;align-items:center;padding:1.5rem 0;border-bottom:1px solid var(--brd);transition:var(--tr);}
+.cart-item:hover{padding-left:.6rem;}
+.cart-thumb{width:96px;height:96px;overflow:hidden;border:1px solid var(--brd);}
+.cart-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.ci-cat{font-size:.58rem;letter-spacing:2.5px;color:var(--g);}
+.ci-name{font-size:1rem;font-family:'Cormorant Garamond',serif;margin:.3rem 0;}
+.ci-qty{display:flex;align-items:center;gap:.9rem;margin-top:.8rem;}
+.qty-btn{width:28px;height:28px;border:1px solid var(--brd);background:transparent;color:var(--tx);cursor:pointer;font-size:1rem;transition:var(--tr);}
+.qty-btn:hover{border-color:var(--g);color:var(--g);}
+.ci-price{font-size:1.2rem;font-family:'Cormorant Garamond',serif;white-space:nowrap;background:linear-gradient(90deg,var(--gd),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.cart-summary-box{background:var(--card);border:1px solid var(--brd);padding:2.5rem;position:sticky;top:90px;height:fit-content;}
+.sum-row{display:flex;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--brd);font-size:.8rem;}
+.sum-row.total{font-size:1.05rem;font-weight:600;border:none;padding-top:1.2rem;}
+.sum-row.total span:last-child{background:linear-gradient(90deg,var(--gd),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+/* ═══ FORMS ═══ */
+.co-page,.pay-page{padding:6rem 5% 6rem;}
+.co-container{display:grid;grid-template-columns:1fr 380px;gap:3rem;}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+.fg{display:flex;flex-direction:column;gap:.6rem;}
+.fg.full{grid-column:1/-1;}
+.fl{font-size:.6rem;letter-spacing:2.5px;color:var(--tx2);}
+.fi{padding:1rem 1.2rem;background:var(--card);border:1px solid var(--brd);color:var(--tx);font-family:'Josefin Sans',sans-serif;font-size:.85rem;outline:none;transition:var(--tr);}
+.fi:focus{border-color:var(--g);box-shadow:0 0 0 2px rgba(201,168,76,.1);}
+.fi::placeholder{color:var(--tx2);opacity:.5;}
+textarea.fi{resize:vertical;}
+.fs-title{font-size:1.25rem;font-family:'Cormorant Garamond',serif;background:linear-gradient(90deg,var(--gd),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:2.5rem 0 1.2rem;}
+.pm-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0;}
+.pm-card{border:1px solid var(--brd);padding:1.5rem 1rem;text-align:center;cursor:pointer;transition:var(--tr);position:relative;}
+.pm-card.sel{border-color:var(--g);background:rgba(201,168,76,.06);}
+.pm-card:hover{border-color:var(--g);}
+.pm-chk{position:absolute;top:.5rem;right:.6rem;color:var(--g);display:none;font-size:.78rem;}
+.pm-card.sel .pm-chk{display:block;}
+.pm-icon{font-size:1.6rem;margin-bottom:.6rem;}
+.pm-name{font-size:.6rem;letter-spacing:2px;}
+/* ═══ PROGRESS STEPS ═══ */
+.prog-steps{display:flex;align-items:center;margin-bottom:4rem;}
+.ps{display:flex;flex-direction:column;align-items:center;gap:.5rem;flex:1;}
+.ps-c{width:38px;height:38px;border:1px solid var(--brd);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;transition:var(--tr);}
+.ps.active .ps-c{border-color:var(--g);color:var(--g);background:rgba(201,168,76,.1);}
+.ps.done .ps-c{background:linear-gradient(135deg,var(--gd),var(--g));border-color:var(--g);color:#000;font-weight:700;}
+.ps-lbl{font-size:.58rem;letter-spacing:2px;color:var(--tx2);}
+.ps-line{flex:1;height:1px;background:var(--brd);margin-bottom:1.5rem;}
+.ps-line.done{background:linear-gradient(90deg,var(--gd),var(--g));}
+/* ═══ THANK YOU ═══ */
+.ty-page{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:5%;}
+.ty-wrap{text-align:center;max-width:640px;}
+.ty-icon{width:110px;height:110px;background:linear-gradient(135deg,var(--gd),var(--g),var(--gl));border-radius:50%;margin:0 auto 2.5rem;display:flex;align-items:center;justify-content:center;font-size:2.8rem;color:#000;animation:glowPulse 2.5s ease-in-out infinite;}
+.ty-title{font-size:3.5rem;font-weight:300;margin-bottom:1rem;}
+.ord-num{font-size:.68rem;letter-spacing:4px;background:linear-gradient(90deg,var(--gd),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:1.5rem 0;}
+/* ═══ BLOG ═══ */
+.blog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:2rem;}
+.blog-card{background:var(--card);border:1px solid var(--brd);overflow:hidden;cursor:pointer;transition:var(--tr);}
+.blog-card:hover{transform:translateY(-6px);box-shadow:0 25px 60px rgba(0,0,0,.3);}
+.blog-thumb{width:100%;height:220px;overflow:hidden;position:relative;}
+.blog-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease,filter .4s ease;filter:brightness(.85) saturate(1.1);}
+.blog-card:hover .blog-thumb img{transform:scale(1.08);filter:brightness(.75) saturate(1.2);}
+.blog-body{padding:1.8rem;}
+.blog-tag{font-size:.58rem;letter-spacing:3px;color:var(--g);}
+.blog-title{font-size:1.25rem;font-family:'Cormorant Garamond',serif;margin:.7rem 0;line-height:1.3;}
+.blog-exc{font-size:.8rem;color:var(--tx2);line-height:1.8;}
+.blog-meta{font-size:.6rem;color:var(--tx2);margin-top:1.2rem;letter-spacing:1.5px;}
+/* ═══ CONTACT ═══ */
+.ct-page{padding:8rem 5% 6rem;}
+.ct-grid{display:grid;grid-template-columns:1fr 1fr;gap:6rem;}
+.ci-item{display:flex;gap:1.5rem;margin-bottom:2.2rem;align-items:flex-start;}
+.ci-icon{width:46px;height:46px;border:1px solid var(--g);display:flex;align-items:center;justify-content:center;color:var(--g);font-size:1rem;flex-shrink:0;transition:var(--tr);}
+.ci-item:hover .ci-icon{background:var(--g);color:#000;}
+.ci-lbl{font-size:.58rem;letter-spacing:2.5px;color:var(--tx2);margin-bottom:.4rem;}
+.ci-val{font-size:.9rem;line-height:1.7;}
+.map-ph{height:280px;border:1px solid var(--brd);background:var(--card);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--tx2);gap:1rem;margin-top:2rem;position:relative;overflow:hidden;}
+.map-ph::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,rgba(201,168,76,.07),transparent 70%);}
+.map-ph p{font-size:.7rem;letter-spacing:3px;z-index:1;}
+/* ═══ WISHLIST ═══ */
+.wl-page{padding:8rem 5% 6rem;}
+/* ═══ MODAL ═══ */
+.modal-ov{position:fixed;inset:0;z-index:5000;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:var(--tr);}
+.modal-ov.open{opacity:1;visibility:visible;}
+.modal{background:var(--card);border:1px solid var(--brd);max-width:860px;width:92%;max-height:92vh;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;transform:scale(.94) translateY(20px);transition:var(--tr);}
+.modal-ov.open .modal{transform:scale(1) translateY(0);}
+.modal-img-wrap{min-height:440px;overflow:hidden;position:relative;background:#0D0A06;}
+.modal-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease;}
+.modal-ov.open .modal-img-wrap img{transform:scale(1.03);}
+.modal-close{position:absolute;top:1rem;right:1rem;background:rgba(0,0,0,.65);border:1px solid rgba(201,168,76,.3);color:#fff;font-size:1rem;cursor:pointer;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:var(--tr);backdrop-filter:blur(8px);z-index:10;}
+.modal-close:hover{background:var(--g);color:#000;}
+.modal-body{padding:3rem;}
+.modal-cat{font-size:.6rem;letter-spacing:3px;color:var(--g);}
+.modal-name{font-size:2.1rem;font-family:'Cormorant Garamond',serif;margin:.5rem 0;font-weight:300;}
+.modal-price{font-size:1.5rem;font-family:'Cormorant Garamond',serif;background:linear-gradient(90deg,var(--gd),var(--g),var(--gl));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.modal-desc{font-size:.82rem;color:var(--tx2);line-height:1.9;margin:1.5rem 0;}
+.modal-specs{font-size:.76rem;color:var(--tx2);line-height:2.2;border-top:1px solid var(--brd);padding-top:1.5rem;}
+.spec-k{color:var(--g);margin-right:.5rem;}
+/* ═══ FOOTER ═══ */
+footer{background:var(--bg2);border-top:1px solid var(--brd);padding:6rem 5% 2.5rem;}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3.5rem;}
+.foot-brand{font-family:'Cormorant Garamond',serif;font-size:2rem;letter-spacing:5px;background:linear-gradient(90deg,var(--gd),var(--g),var(--gl),var(--g),var(--gd));background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 6s linear infinite;}
+.foot-desc{font-size:.8rem;color:var(--tx2);line-height:1.9;margin-top:1rem;max-width:280px;}
+.foot-title{font-size:.6rem;letter-spacing:4px;color:var(--g);margin-bottom:1.8rem;}
+.foot-links{display:flex;flex-direction:column;gap:.9rem;}
+.foot-links a{font-size:.8rem;color:var(--tx2);text-decoration:none;transition:var(--tr);}
+.foot-links a:hover{color:var(--g);padding-left:6px;}
+.foot-bottom{margin-top:5rem;padding-top:2.5rem;border-top:1px solid var(--brd);display:flex;justify-content:space-between;align-items:center;font-size:.68rem;color:var(--tx2);flex-wrap:wrap;gap:1rem;}
+.soc-links{display:flex;gap:.8rem;}
+.soc-link{width:38px;height:38px;border:1px solid var(--brd);display:flex;align-items:center;justify-content:center;color:var(--tx2);font-size:.82rem;cursor:pointer;transition:var(--tr);}
+.soc-link:hover{border-color:var(--g);color:var(--g);}
+/* ═══════════════════════════════════════════
+   COMPREHENSIVE RESPONSIVE — ALL DEVICES
+   Breakpoints: 1200 / 1024 / 900 / 768 / 600 / 480 / 360
+═══════════════════════════════════════════ */
+
+/* ── Global overflow guard ── */
+html,body{max-width:100%;overflow-x:hidden;}
+img,video,canvas,iframe{max-width:100%;}
+
+/* ── NAV: hide links at 1024, show hamburger ── */
+@media(max-width:1024px){
+  .nav-links{display:none;}
+  .hamburger{display:flex !important;}
+  /* shrink logo a little so icons don't overflow */
+  .nav-logo{font-size:1.5rem;letter-spacing:3px;}
+  /* remove theme toggle label text on medium screens */
+  .theme-toggle{padding:.4rem .7rem;font-size:.58rem;letter-spacing:0;}
+}
+
+/* ── NAV: tighter on small tablets ── */
+@media(max-width:768px){
+  nav{padding:0 4%;height:64px;}
+  .nav-logo{font-size:1.35rem;letter-spacing:2px;}
+  .nav-icons{gap:.5rem;}
+  /* hide theme toggle text — keep it as icon only */
+  .theme-toggle{display:none;}
+  /* show hamburger clearly */
+  .hamburger{display:flex !important;padding:.6rem;z-index:1001;}
+  .hamburger span{width:24px;height:2px;background:var(--g);border-radius:2px;}
+}
+
+/* ── NAV: tiny phones ── */
+@media(max-width:480px){
+  nav{padding:0 3%;height:60px;}
+  .nav-logo{font-size:1.2rem;letter-spacing:1.5px;}
+  .nav-icons{gap:.3rem;}
+  /* hide search and wishlist on tiny phones — keep cart + hamburger */
+  .nav-icon-btn:nth-child(1){display:none;}  /* search */
+  .nav-icon-btn:nth-child(2){display:none;}  /* wishlist */
+}
+
+/* ── PAGES: adjust padding for smaller nav ── */
+@media(max-width:768px){
+  .page:not(#page-home){padding-top:64px;}
+  .cart-page,.wl-page,.ct-page,.co-page,.pay-page{padding-top:80px;}
+}
+@media(max-width:480px){
+  .page:not(#page-home){padding-top:60px;}
+}
+
+/* ── HERO ── */
+@media(max-width:768px){
+  .hero-title{font-size:clamp(2.4rem,10vw,4rem);}
+  .hero-sub{font-size:.72rem;letter-spacing:2px;}
+  .hero-badge{font-size:.55rem;letter-spacing:3px;padding:.45rem 1.2rem;}
+  .hero-btns{flex-direction:column;align-items:center;gap:1rem;}
+  .btn-primary,.btn-outline{padding:.85rem 2rem;font-size:.68rem;width:220px;text-align:center;}
+}
+@media(max-width:480px){
+  .hero-title{font-size:clamp(2rem,9vw,3rem);}
+  .hero-sub{display:none;}
+  .hero-scroll{display:none;}
+}
+
+/* ── STATS STRIP ── */
+@media(max-width:768px){
+  .stats-strip{grid-template-columns:repeat(2,1fr);gap:0;}
+  .stat-item{border-right:1px solid rgba(0,0,0,.1);border-bottom:1px solid rgba(0,0,0,.1);padding:1.5rem 1rem;}
+  .stat-item:nth-child(2),.stat-item:nth-child(4){border-right:none;}
+  .stat-item h3{font-size:2rem;}
+}
+@media(max-width:400px){
+  .stats-strip{grid-template-columns:1fr 1fr;}
+  .stat-item h3{font-size:1.6rem;}
+  .stat-item p{font-size:.52rem;letter-spacing:1.5px;}
+}
+
+/* ── SECTIONS ── */
+@media(max-width:768px){
+  .section{padding:5rem 4%;}
+  .sec-title{font-size:clamp(1.8rem,6vw,2.8rem);}
+  .sec-header{margin-bottom:3rem;}
+}
+@media(max-width:480px){
+  .section{padding:4rem 4%;}
+  .sec-title{font-size:clamp(1.6rem,7vw,2.4rem);}
+}
+
+/* ── PRODUCT GRID ── */
+@media(max-width:900px){
+  .product-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.5rem;}
+}
+@media(max-width:600px){
+  .product-grid{grid-template-columns:repeat(2,1fr);gap:1rem;}
+  .prod-name{font-size:1rem;}
+  .prod-info{padding:1rem;}
+  .prod-actions{padding:0 1rem 1rem;gap:.4rem;}
+  .btn-sm{font-size:.55rem;letter-spacing:1px;padding:.5rem .4rem;}
+}
+@media(max-width:380px){
+  .product-grid{grid-template-columns:1fr;}
+}
+
+/* ── CATEGORY GRID ── */
+@media(max-width:768px){
+  .cat-grid{grid-template-columns:repeat(2,1fr);gap:1rem;}
+  .cat-content h3{font-size:1.1rem;}
+}
+@media(max-width:480px){
+  .cat-grid{grid-template-columns:repeat(2,1fr);gap:.8rem;}
+}
+@media(max-width:360px){
+  .cat-grid{grid-template-columns:1fr;}
+}
+
+/* ── FEATURES GRID ── */
+@media(max-width:768px){
+  .feat-grid{grid-template-columns:repeat(2,1fr);gap:1.2rem;}
+  .feat-card{padding:2rem 1.2rem;}
+}
+@media(max-width:480px){
+  .feat-grid{grid-template-columns:1fr;}
+}
+
+/* ── PARALLAX BANNER ── */
+@media(max-width:768px){
+  .pb{height:45vh;}
+  .pb-content h2{font-size:clamp(1.5rem,6vw,2.5rem);letter-spacing:3px;}
+  .pb-content p{font-size:.68rem;letter-spacing:2px;}
+}
+@media(max-width:480px){
+  .pb{height:40vh;}
+  .pb-content h2{font-size:1.4rem;letter-spacing:2px;}
+}
+
+/* ── OFFERS GRID ── */
+@media(max-width:768px){
+  .off-grid{grid-template-columns:1fr;max-width:480px;margin:0 auto;}
+  .off-card{padding:2rem;}
+}
+
+/* ── TESTIMONIALS ── */
+@media(max-width:768px){
+  .test-item{padding:0 4%;}
+  .test-quote{font-size:clamp(1rem,4vw,1.4rem);}
+}
+
+/* ── NEWSLETTER ── */
+@media(max-width:600px){
+  .nl-form{flex-direction:column;gap:0;}
+  .nl-input{border-right:1px solid var(--brd);border-bottom:none;}
+  .nl-form .btn-primary{clip-path:none;width:100%;}
+}
+
+/* ── ABOUT ── */
+@media(max-width:1024px){
+  .about-grid{grid-template-columns:1fr;gap:3rem;}
+  .about-img-grid{grid-template-columns:1fr 1fr;gap:1rem;}
+  .abt-img-wrap[style*="height:540px"]{height:320px !important;}
+  .abt-img-wrap[style*="height:260px"]{height:200px !important;}
+}
+@media(max-width:600px){
+  .about-img-grid{grid-template-columns:1fr;}
+  .abt-img-wrap{height:240px !important;grid-row:auto !important;grid-column:auto !important;}
+}
+
+/* ── CART ── */
+@media(max-width:1024px){
+  .cart-container{grid-template-columns:1fr;}
+  .cart-summary-box{position:static;}
+}
+@media(max-width:600px){
+  .cart-page{padding:5rem 4% 4rem;}
+  .cart-item{grid-template-columns:72px 1fr auto;gap:1rem;}
+  .cart-thumb{width:72px;height:72px;}
+  .ci-name{font-size:.9rem;}
+}
+@media(max-width:400px){
+  .cart-item{grid-template-columns:60px 1fr;gap:.8rem;}
+  .ci-price{grid-column:1/-1;font-size:1rem;}
+}
+
+/* ── CHECKOUT / PAYMENT ── */
+@media(max-width:1024px){
+  .co-container{grid-template-columns:1fr;}
+}
+@media(max-width:768px){
+  .co-page,.pay-page{padding:5rem 4% 4rem;}
+  .f-grid{grid-template-columns:1fr;}
+  .fg.full{grid-column:1;}
+  .pm-methods{grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:480px){
+  .pm-methods{grid-template-columns:1fr;}
+  .prog-steps{gap:.3rem;}
+  .ps-c{width:30px;height:30px;font-size:.62rem;}
+  .ps-lbl{font-size:.5rem;letter-spacing:1px;}
+  .ps-line{min-width:10px;}
+}
+
+/* ── MODAL ── */
+@media(max-width:1024px){
+  .modal{grid-template-columns:1fr;width:95%;}
+  .modal-img-wrap{min-height:260px;}
+}
+@media(max-width:480px){
+  .modal{width:98%;}
+  .modal-body{padding:1.5rem;}
+  .modal-name{font-size:1.6rem;}
+  .modal-img-wrap{min-height:220px;}
+}
+
+/* ── BLOG ── */
+@media(max-width:900px){
+  .blog-grid{grid-template-columns:repeat(2,1fr);gap:1.2rem;}
+}
+@media(max-width:600px){
+  .blog-grid{grid-template-columns:1fr;}
+}
+
+/* ── CONTACT ── */
+@media(max-width:1024px){
+  .ct-grid{grid-template-columns:1fr;gap:3rem;}
+  .ct-page{padding:5rem 4% 4rem;}
+}
+
+/* ── FOOTER ── */
+@media(max-width:1024px){
+  .foot-grid{grid-template-columns:1fr 1fr;gap:2.5rem;}
+}
+@media(max-width:600px){
+  .foot-grid{grid-template-columns:1fr;gap:2rem;}
+  footer{padding:4rem 4% 2rem;}
+  .foot-bottom{flex-direction:column;align-items:flex-start;gap:.5rem;}
+}
+
+/* ── TIMELINE ── */
+@media(max-width:600px){
+  .tl-item{padding-left:36px;gap:1.5rem;}
+}
+
+/* ── FILTER BUTTONS ── */
+@media(max-width:600px){
+  #page-products .section>div:nth-child(2){gap:.6rem;}
+  .filter-btn{font-size:.55rem;padding:.5rem .8rem;letter-spacing:1px;}
+}
+
+/* ── PROGRESS STEPS ── */
+@media(max-width:600px){
+  .prog-steps{overflow-x:auto;padding-bottom:.5rem;min-width:0;}
+}
+
+/* ── SECTION PADDING on small screens ── */
+@media(max-width:480px){
+  .section{padding:3.5rem 4%;}
+  .wl-page,.cart-page{padding:4.5rem 4% 3rem;}
+}
+
+/* ── BUTTON clip-path fix on very small screens ── */
+@media(max-width:360px){
+  .btn-primary,.btn-outline{clip-path:none;border-radius:0;width:100%;justify-content:center;}
+}
+</style>
+</head>
+<body data-theme="dark">
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="ld-ring"></div>
+  <div class="ld-logo">AURANOVA</div>
+  <div class="ld-bar"></div>
+  <div class="ld-txt">CURATING LUXURY SINCE 1890</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- SEARCH -->
+<div class="search-ov" id="searchOv">
+  <button class="search-cls" onclick="closeSearch()">✕</button>
+  <div class="search-wrap">
+    <input class="search-big" id="searchInput" placeholder="Search jewellery..."/>
+    <p class="search-hint">PRESS ESC TO CLOSE</p>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-ov" id="productModal">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav" id="mobileNav">
+  <button class="mob-close" onclick="closeMobileNav()">✕</button>
+  <a href="#" onclick="navigate('home');closeMobileNav()">Home</a>
+  <a href="#" onclick="navigate('products');closeMobileNav()">Products</a>
+  <a href="#" onclick="navigate('categories');closeMobileNav()">Categories</a>
+  <a href="#" onclick="navigate('offers');closeMobileNav()">Offers</a>
+  <a href="#" onclick="navigate('about');closeMobileNav()">About</a>
+  <a href="#" onclick="navigate('blog');closeMobileNav()">Blog</a>
+  <a href="#" onclick="navigate('contact');closeMobileNav()">Contact</a>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="navigate('home')">AURANOVA</div>
+  <div class="nav-links">
+    <a href="#" onclick="navigate('home')">HOME</a>
+    <a href="#" onclick="navigate('products')">PRODUCTS</a>
+    <a href="#" onclick="navigate('categories')">CATEGORIES</a>
+    <a href="#" onclick="navigate('offers')">OFFERS</a>
+    <a href="#" onclick="navigate('about')">ABOUT</a>
+    <a href="#" onclick="navigate('blog')">BLOG</a>
+    <a href="#" onclick="navigate('contact')">CONTACT</a>
+  </div>
+  <div class="nav-icons">
+    <button class="nav-icon-btn" onclick="openSearch()">🔍</button>
+    <button class="nav-icon-btn" onclick="navigate('wishlist')">♡</button>
+    <button class="nav-icon-btn" onclick="navigate('cart')" style="position:relative">🛒<span class="cart-cnt" id="cartCount">0</span></button>
+    <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">☀ LIGHT</button>
+    <button class="hamburger" onclick="toggleMobileNav()"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- ══════════ HOME ══════════ -->
+<div class="page active" id="page-home">
+  <section class="hero-section" id="heroSection">
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-bg-img" id="heroBgImg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge">◆ EST. 1890 · FINEST JEWELLERY ◆</div>
+      <h1 class="hero-title">Where Gold<br>Meets <span class="gold-text">Eternity</span></h1>
+      <p class="hero-sub">HANDCRAFTED LUXURY · GOLD · SILVER · DIAMONDS</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="navigate('products')">EXPLORE COLLECTION</button>
+        <button class="btn-outline" onclick="navigate('about')"><span>OUR STORY</span></button>
+      </div>
+    </div>
+    <div class="hero-scroll"><span>SCROLL</span><div class="hero-scroll-line"></div></div>
+  </section>
+
+  <div class="stats-strip">
+    <div class="stat-item" data-aos="fade-up"><h3 id="stat1">0</h3><p>YEARS OF EXCELLENCE</p></div>
+    <div class="stat-item" data-aos="fade-up" data-aos-delay="100"><h3 id="stat2">0</h3><p>HAPPY CLIENTS</p></div>
+    <div class="stat-item" data-aos="fade-up" data-aos-delay="200"><h3 id="stat3">0</h3><p>UNIQUE DESIGNS</p></div>
+    <div class="stat-item" data-aos="fade-up" data-aos-delay="300"><h3 id="stat4">0</h3><p>COUNTRIES SERVED</p></div>
+  </div>
+
+  <section class="section">
+    <div class="sec-header">
+      <div class="sec-eye center" data-aos="fade-up">WHY CHOOSE US</div>
+      <h2 class="sec-title" data-aos="fade-up" data-aos-delay="80">Crafted With Passion,<br>Delivered With Care</h2>
+      <div class="sec-line center"></div>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card" data-aos="fade-up"><div class="feat-icon-wrap">💎</div><h3 class="feat-title">BIS Certified</h3><p class="feat-text">Every piece carries a BIS hallmark certificate verifying gold and silver purity to international standards.</p></div>
+      <div class="feat-card" data-aos="fade-up" data-aos-delay="100"><div class="feat-icon-wrap">🎨</div><h3 class="feat-title">Custom Designs</h3><p class="feat-text">Bespoke jewellery crafted to your exact vision by master artisans with decades of experience.</p></div>
+      <div class="feat-card" data-aos="fade-up" data-aos-delay="200"><div class="feat-icon-wrap">🚚</div><h3 class="feat-title">Insured Delivery</h3><p class="feat-text">All orders shipped in tamper-proof insured packaging with real-time GPS tracking worldwide.</p></div>
+      <div class="feat-card" data-aos="fade-up" data-aos-delay="300"><div class="feat-icon-wrap">🔄</div><h3 class="feat-title">30-Day Returns</h3><p class="feat-text">Hassle-free returns and lifetime polishing guarantee. Your satisfaction is our commitment.</p></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="sec-header">
+      <div class="sec-eye center" data-aos="fade-up">BROWSE BY</div>
+      <h2 class="sec-title" data-aos="fade-up">Shop by Category</h2>
+      <div class="sec-line center"></div>
+    </div>
+    <div class="cat-grid" id="home-categories"></div>
+  </section>
+
+  <div class="pb">
+    <div class="pb-bg" id="pb1" style="background-image:url('https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=1920&q=90&fit=crop');"></div>
+    <div class="pb-overlay" style="background:linear-gradient(135deg,rgba(8,6,4,.72),rgba(8,6,4,.45));"></div>
+    <div class="pb-content" data-aos="fade-up">
+      <h2>NEW COLLECTION 2025</h2>
+      <p>DISCOVER THE ART OF PURE GOLD</p>
+      <button class="btn-primary" style="margin-top:2.5rem" onclick="navigate('products')">SHOP NOW</button>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="sec-header">
+      <div class="sec-eye center" data-aos="fade-up">HANDPICKED FOR YOU</div>
+      <h2 class="sec-title" data-aos="fade-up">Featured Pieces</h2>
+      <div class="sec-line center"></div>
+    </div>
+    <div class="product-grid" id="featured-products"></div>
+  </section>
+
+  <div class="gdiv"><div class="gdl"></div><div class="gdsym">◆ AURANOVA ◆</div><div class="gdl"></div></div>
+
+  <section class="section">
+    <div class="sec-header">
+      <div class="sec-eye center" data-aos="fade-up">LIMITED TIME</div>
+      <h2 class="sec-title" data-aos="fade-up">Exclusive Offers</h2>
+      <div class="sec-line center"></div>
+    </div>
+    <div class="off-grid" id="home-offers"></div>
+    <div style="text-align:center;margin-top:3.5rem"><button class="btn-outline" onclick="navigate('offers')"><span>VIEW ALL OFFERS</span></button></div>
+  </section>
+
+  <section class="section" style="background:var(--bg2)">
+    <div class="sec-header">
+      <div class="sec-eye center" data-aos="fade-up">CLIENT STORIES</div>
+      <h2 class="sec-title" data-aos="fade-up">Voices of Delight</h2>
+      <div class="sec-line center"></div>
+    </div>
+    <div class="test-slider">
+      <div class="test-track" id="testTrack">
+        <div class="test-item"><div class="test-stars">★ ★ ★ ★ ★</div><p class="test-quote">"The necklace was beyond my expectations. The craftsmanship is extraordinary and the gold purity is impeccable. AuraNova has a lifelong customer in me."</p><p class="test-author">— PRIYA SHARMA, DUBAI</p></div>
+        <div class="test-item"><div class="test-stars">★ ★ ★ ★ ★</div><p class="test-quote">"I commissioned a custom engagement ring and they delivered something more magnificent than I ever imagined. Their attention to detail is truly unmatched."</p><p class="test-author">— RAHUL MEHTA, MUMBAI</p></div>
+        <div class="test-item"><div class="test-stars">★ ★ ★ ★ ★</div><p class="test-quote">"My silver collection from AuraNova is the centrepiece of every occasion. Timeless, elegant, and crafted with the finest sterling silver I have ever worn."</p><p class="test-author">— ANANYA KRISHNA, CHENNAI</p></div>
+      </div>
+    </div>
+    <div class="sdots"><div class="sdot active" onclick="goSlide(0)"></div><div class="sdot" onclick="goSlide(1)"></div><div class="sdot" onclick="goSlide(2)"></div></div>
+  </section>
+
+  <section class="nl-section">
+    <div class="sec-eye center" style="justify-content:center" data-aos="fade-up">STAY CONNECTED</div>
+    <h2 class="sec-title" data-aos="fade-up" style="margin-top:.5rem">Join The AuraNova Family</h2>
+    <p style="font-size:.84rem;color:var(--tx2);margin-top:.5rem;font-weight:300" data-aos="fade-up">Exclusive drops, new arrivals & jewellery care secrets in your inbox.</p>
+    <div class="nl-form" data-aos="fade-up">
+      <input class="nl-input" placeholder="YOUR EMAIL ADDRESS"/>
+      <button class="btn-primary" onclick="showToast('Subscribed! Welcome to AuraNova.')">SUBSCRIBE</button>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════ PRODUCTS ══════════ -->
+<div class="page" id="page-products">
+  <section class="section">
+    <div class="sec-header"><div class="sec-eye center">COLLECTION</div><h2 class="sec-title">All Products</h2><div class="sec-line center"></div></div>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-bottom:3.5rem">
+      <button class="btn-sm gold filter-btn" onclick="filterProducts('all',this)">ALL</button>
+      <button class="btn-sm filter-btn" onclick="filterProducts('gold',this)">GOLD</button>
+      <button class="btn-sm filter-btn" onclick="filterProducts('silver',this)">SILVER</button>
+      <button class="btn-sm filter-btn" onclick="filterProducts('rings',this)">RINGS</button>
+      <button class="btn-sm filter-btn" onclick="filterProducts('necklaces',this)">NECKLACES</button>
+      <button class="btn-sm filter-btn" onclick="filterProducts('earrings',this)">EARRINGS</button>
+      <button class="btn-sm filter-btn" onclick="filterProducts('bracelets',this)">BRACELETS</button>
+    </div>
+    <div class="product-grid" id="all-products"></div>
+  </section>
+</div>
+
+<!-- ══════════ CATEGORIES ══════════ -->
+<div class="page" id="page-categories">
+  <section class="section">
+    <div class="sec-header"><div class="sec-eye center">EXPLORE</div><h2 class="sec-title">Product Categories</h2><div class="sec-line center"></div></div>
+    <div class="cat-grid" id="all-categories"></div>
+    <div id="cat-sec" style="margin-top:6rem;display:none">
+      <div class="gdiv"><div class="gdl"></div><div class="gdsym" id="cat-title">Category</div><div class="gdl"></div></div>
+      <div class="product-grid" id="cat-products" style="margin-top:3rem"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════ OFFERS ══════════ -->
+<div class="page" id="page-offers">
+  <section class="section">
+    <div class="sec-header"><div class="sec-eye center">EXCLUSIVE DEALS</div><h2 class="sec-title">Special Offers & Sales</h2><div class="sec-line center"></div></div>
+    <div class="off-grid" id="all-offers"></div>
+    <div style="margin-top:6rem">
+      <div class="sec-header"><div class="sec-eye center">ON SALE NOW</div><h2 class="sec-title">Discounted Pieces</h2><div class="sec-line center"></div></div>
+      <div class="product-grid" id="offer-products"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════ ABOUT ══════════ -->
+<div class="page" id="page-about">
+  <section class="section">
+    <div class="about-grid">
+      <div data-aos="fade-right">
+        <div class="sec-eye left">OUR STORY</div>
+        <h2 class="sec-title" style="margin-top:1rem">A Legacy of<br><span style="font-style:italic;background:linear-gradient(90deg,var(--gd),var(--g),var(--gl));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Pure Gold</span></h2>
+        <div class="sec-line"></div>
+        <p class="sec-sub">Founded in 1890, AuraNova has been crafting jewellery that transcends generations. Every piece is born from the hands of master artisans who pour their soul into every curve and setting.</p>
+        <p class="sec-sub" style="margin-top:1.5rem">Our commitment is simple — to create jewellery that tells your story, in the most precious metals on Earth.</p>
+        <div style="display:flex;gap:2rem;margin-top:3rem;flex-wrap:wrap">
+          <button class="btn-primary" onclick="navigate('products')">VIEW COLLECTION</button>
+          <button class="btn-outline" onclick="navigate('contact')"><span>CONTACT US</span></button>
+        </div>
+      </div>
+      <div class="about-img-grid" data-aos="fade-left">
+        <div class="abt-img-wrap" style="grid-column:1;grid-row:1/3;height:540px"><img class="abt-img" src="https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=600&q=90&fit=crop" alt="Gold jewellery crafting" loading="lazy"/></div>
+        <div class="abt-img-wrap" style="height:260px"><img class="abt-img" src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=90&fit=crop" alt="Gold necklace" loading="lazy"/></div>
+        <div class="abt-img-wrap" style="height:260px"><img class="abt-img" src="https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&q=90&fit=crop" alt="Gold bangle" loading="lazy"/></div>
+      </div>
+    </div>
+  </section>
+  <div class="pb">
+    <div class="pb-bg" style="background-image:url('https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=1920&q=90&fit=crop');"></div>
+    <div class="pb-overlay" style="background:rgba(8,6,4,.6);"></div>
+    <div class="pb-content"><h2>134 YEARS OF CRAFTSMANSHIP</h2><p>GOLD · SILVER · DIAMONDS · GEMSTONES</p></div>
+  </div>
+  <section class="section">
+    <div class="sec-header"><div class="sec-eye center">MILESTONES</div><h2 class="sec-title">Our Journey</h2><div class="sec-line center"></div></div>
+    <div class="tl" style="max-width:600px;margin:0 auto">
+      <div class="tl-item" data-aos="fade-right"><div class="tl-dot"></div><div><div class="tl-yr">1890</div><h3 class="tl-title">Founded in Jaipur</h3><p class="tl-text">Raja Bir Singh established AuraNova as a royal goldsmith to the Jaipur court, crafting for maharajas and nobility.</p></div></div>
+      <div class="tl-item" data-aos="fade-right" data-aos-delay="100"><div class="tl-dot"></div><div><div class="tl-yr">1950</div><h3 class="tl-title">National Recognition</h3><p class="tl-text">Awarded the National Artisan Award for excellence in goldsmithing by the Government of India.</p></div></div>
+      <div class="tl-item" data-aos="fade-right" data-aos-delay="200"><div class="tl-dot"></div><div><div class="tl-yr">1990</div><h3 class="tl-title">International Expansion</h3><p class="tl-text">Opened showrooms in Dubai, London, and Singapore, bringing Indian jewellery to the world.</p></div></div>
+      <div class="tl-item" data-aos="fade-right" data-aos-delay="300"><div class="tl-dot"></div><div><div class="tl-yr">2025</div><h3 class="tl-title">Digital Luxury</h3><p class="tl-text">Launched the AuraNova digital platform, making handcrafted luxury accessible to customers worldwide.</p></div></div>
+    </div>
+  </section>
+</div>
+
+<!-- ══════════ CART ══════════ -->
+<div class="page cart-page" id="page-cart">
+  <div class="sec-header" style="text-align:left"><div class="sec-eye left">YOUR SELECTION</div><h2 class="sec-title" style="margin-top:.8rem">Shopping Cart</h2><div class="sec-line"></div></div>
+  <div class="cart-container" id="cartContainer">
+    <div id="cartItemsList"></div>
+    <div class="cart-summary-box">
+      <h3 style="font-size:1.3rem;margin-bottom:2rem;letter-spacing:2px">ORDER SUMMARY</h3>
+      <div class="sum-row"><span>Subtotal</span><span id="subtotal">₹0</span></div>
+      <div class="sum-row"><span>GST (3%)</span><span id="gst">₹0</span></div>
+      <div class="sum-row"><span>Shipping</span><span style="color:var(--g)">FREE</span></div>
+      <div class="sum-row total"><span>TOTAL</span><span id="cartTotal">₹0</span></div>
+      <button class="btn-primary" style="width:100%;margin-top:2.5rem" onclick="navigate('checkout')">PROCEED TO CHECKOUT</button>
+      <button class="btn-outline" style="width:100%;margin-top:1rem" onclick="navigate('products')"><span>CONTINUE SHOPPING</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ CHECKOUT ══════════ -->
+<div class="page co-page" id="page-checkout">
+  <div class="prog-steps"><div class="ps done"><div class="ps-c">✓</div><div class="ps-lbl">CART</div></div><div class="ps-line done"></div><div class="ps active"><div class="ps-c">2</div><div class="ps-lbl">CHECKOUT</div></div><div class="ps-line"></div><div class="ps"><div class="ps-c">3</div><div class="ps-lbl">PAYMENT</div></div><div class="ps-line"></div><div class="ps"><div class="ps-c">4</div><div class="ps-lbl">CONFIRM</div></div></div>
+  <div class="co-container">
+    <div>
+      <div class="sec-eye left">DELIVERY DETAILS</div><h2 class="sec-title" style="margin-top:.8rem">Shipping Information</h2><div class="sec-line"></div>
+      <p class="fs-title">Personal Information</p>
+      <div class="f-grid">
+        <div class="fg"><label class="fl">FIRST NAME</label><input class="fi" placeholder="Arjun"/></div>
+        <div class="fg"><label class="fl">LAST NAME</label><input class="fi" placeholder="Sharma"/></div>
+        <div class="fg"><label class="fl">EMAIL</label><input class="fi" placeholder="arjun@email.com" type="email"/></div>
+        <div class="fg"><label class="fl">PHONE</label><input class="fi" placeholder="+91 9876543210"/></div>
+      </div>
+      <p class="fs-title">Delivery Address</p>
+      <div class="f-grid">
+        <div class="fg full"><label class="fl">ADDRESS LINE 1</label><input class="fi" placeholder="123, MG Road"/></div>
+        <div class="fg full"><label class="fl">ADDRESS LINE 2</label><input class="fi" placeholder="Apartment, suite, etc."/></div>
+        <div class="fg"><label class="fl">CITY</label><input class="fi" placeholder="Chennai"/></div>
+        <div class="fg"><label class="fl">STATE</label><input class="fi" placeholder="Tamil Nadu"/></div>
+        <div class="fg"><label class="fl">PINCODE</label><input class="fi" placeholder="600001"/></div>
+        <div class="fg"><label class="fl">COUNTRY</label><input class="fi" value="India"/></div>
+      </div>
+      <button class="btn-primary" style="margin-top:2.5rem" onclick="navigate('payment')">CONTINUE TO PAYMENT</button>
+    </div>
+    <div>
+      <div class="cart-summary-box"><h3 style="font-size:1.2rem;margin-bottom:1.8rem;letter-spacing:2px">ORDER SUMMARY</h3><div id="checkoutItems"></div><div class="sum-row"><span>Subtotal</span><span id="co-subtotal">₹0</span></div><div class="sum-row"><span>GST (3%)</span><span id="co-gst">₹0</span></div><div class="sum-row"><span>Shipping</span><span style="color:var(--g)">FREE</span></div><div class="sum-row total"><span>TOTAL</span><span id="co-total">₹0</span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PAYMENT ══════════ -->
+<div class="page pay-page" id="page-payment">
+  <div class="prog-steps"><div class="ps done"><div class="ps-c">✓</div><div class="ps-lbl">CART</div></div><div class="ps-line done"></div><div class="ps done"><div class="ps-c">✓</div><div class="ps-lbl">CHECKOUT</div></div><div class="ps-line done"></div><div class="ps active"><div class="ps-c">3</div><div class="ps-lbl">PAYMENT</div></div><div class="ps-line"></div><div class="ps"><div class="ps-c">4</div><div class="ps-lbl">CONFIRM</div></div></div>
+  <div class="co-container">
+    <div>
+      <div class="sec-eye left">SECURE PAYMENT</div><h2 class="sec-title" style="margin-top:.8rem">Payment Details</h2><div class="sec-line"></div>
+      <p class="fs-title">Choose Payment Method</p>
+      <div class="pm-methods">
+        <div class="pm-card sel" onclick="selPay(this)"><div class="pm-chk">✓</div><div class="pm-icon">💳</div><div class="pm-name">CARD</div></div>
+        <div class="pm-card" onclick="selPay(this)"><div class="pm-chk">✓</div><div class="pm-icon">📱</div><div class="pm-name">UPI</div></div>
+        <div class="pm-card" onclick="selPay(this)"><div class="pm-chk">✓</div><div class="pm-icon">🏦</div><div class="pm-name">NET BANKING</div></div>
+      </div>
+      <p class="fs-title">Card Information</p>
+      <div class="f-grid">
+        <div class="fg full"><label class="fl">CARD NUMBER</label><input class="fi" placeholder="1234  5678  9012  3456" maxlength="19"/></div>
+        <div class="fg"><label class="fl">EXPIRY</label><input class="fi" placeholder="MM / YY"/></div>
+        <div class="fg"><label class="fl">CVV</label><input class="fi" placeholder="•••" type="password" maxlength="3"/></div>
+        <div class="fg full"><label class="fl">NAME ON CARD</label><input class="fi" placeholder="ARJUN SHARMA"/></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:1rem;margin:2rem 0;padding:1.2rem;border:1px solid var(--brd);font-size:.75rem;color:var(--tx2)">🔒 Your payment is secured with 256-bit SSL encryption.</div>
+      <button class="btn-primary" style="width:100%;padding:1.2rem;letter-spacing:3px" onclick="placeOrder()">PLACE ORDER & PAY SECURELY</button>
+    </div>
+    <div><div class="cart-summary-box"><h3 style="font-size:1.2rem;margin-bottom:1.8rem;letter-spacing:2px">ORDER SUMMARY</h3><div id="paymentItems"></div><div class="sum-row total"><span>TOTAL</span><span id="pay-total">₹0</span></div></div></div>
+  </div>
+</div>
+
+<!-- ══════════ THANK YOU ══════════ -->
+<div class="page" id="page-thankyou">
+  <div class="ty-page"><div class="ty-wrap">
+    <div class="ty-icon">✓</div>
+    <h1 class="ty-title">Thank You!</h1>
+    <p class="sec-sub" style="margin:0 auto;text-align:center">Your order has been placed and is being prepared with the utmost care by our artisans.</p>
+    <p class="ord-num" id="orderNumber">ORDER #AUR-2025-0001</p>
+    <div style="background:var(--card);border:1px solid var(--brd);padding:2rem;margin:2.5rem 0;text-align:left">
+      <div class="sum-row"><span style="font-size:.68rem;letter-spacing:2px;color:var(--tx2)">ESTIMATED DELIVERY</span><span style="color:var(--g)">3–5 Business Days</span></div>
+      <div class="sum-row"><span style="font-size:.68rem;letter-spacing:2px;color:var(--tx2)">SHIPPING</span><span>Insured Express Courier</span></div>
+      <div class="sum-row" style="border:none"><span style="font-size:.68rem;letter-spacing:2px;color:var(--tx2)">PAYMENT</span><span style="color:#4CAF50;font-weight:600">✓ CONFIRMED</span></div>
+    </div>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+      <button class="btn-primary" onclick="navigate('home')">BACK TO HOME</button>
+      <button class="btn-outline" onclick="navigate('products')"><span>CONTINUE SHOPPING</span></button>
+    </div>
+  </div></div>
+</div>
+
+<!-- ══════════ WISHLIST ══════════ -->
+<div class="page wl-page" id="page-wishlist">
+  <div class="sec-header" style="text-align:left"><div class="sec-eye left">SAVED ITEMS</div><h2 class="sec-title" style="margin-top:.8rem">My Wishlist</h2><div class="sec-line"></div></div>
+  <div style="margin-top:2rem" id="wishlistGrid"></div>
+</div>
+
+<!-- ══════════ BLOG ══════════ -->
+<div class="page" id="page-blog">
+  <section class="section">
+    <div class="sec-header"><div class="sec-eye center">INSIGHTS & STORIES</div><h2 class="sec-title">The AuraNova Journal</h2><div class="sec-line center"></div></div>
+    <div class="blog-grid" id="blog-grid"></div>
+  </section>
+</div>
+
+<!-- ══════════ CONTACT ══════════ -->
+<div class="page ct-page" id="page-contact">
+  <div class="sec-header"><div class="sec-eye center">GET IN TOUCH</div><h2 class="sec-title">Contact AuraNova</h2><div class="sec-line center"></div></div>
+  <div class="ct-grid">
+    <div>
+      <div class="ci-item" data-aos="fade-right"><div class="ci-icon">📍</div><div><p class="ci-lbl">VISIT US</p><p class="ci-val">12, Jewellers' Row, Luz, Chennai — 600004, Tamil Nadu</p></div></div>
+      <div class="ci-item" data-aos="fade-right" data-aos-delay="100"><div class="ci-icon">📞</div><div><p class="ci-lbl">CALL US</p><p class="ci-val">+91 44 2345 6789<br>+91 98765 43210 (WhatsApp)</p></div></div>
+      <div class="ci-item" data-aos="fade-right" data-aos-delay="200"><div class="ci-icon">✉</div><div><p class="ci-lbl">EMAIL US</p><p class="ci-val">hello@auranova.in<br>support@auranova.in</p></div></div>
+      <div class="ci-item" data-aos="fade-right" data-aos-delay="300"><div class="ci-icon">🕐</div><div><p class="ci-lbl">STORE HOURS</p><p class="ci-val">Mon–Sat: 10:00 AM – 8:00 PM<br>Sunday: 11:00 AM – 6:00 PM</p></div></div>
+      <div class="map-ph"><span style="font-size:2.5rem;z-index:1">📍</span><p>CHENNAI SHOWROOM · LUZ, MYLAPORE</p></div>
+    </div>
+    <div data-aos="fade-left">
+      <p class="fs-title" style="margin-top:0">Send Us a Message</p>
+      <div class="f-grid">
+        <div class="fg"><label class="fl">YOUR NAME</label><input class="fi" placeholder="Arjun Sharma"/></div>
+        <div class="fg"><label class="fl">EMAIL</label><input class="fi" placeholder="arjun@email.com"/></div>
+        <div class="fg full"><label class="fl">SUBJECT</label><input class="fi" placeholder="Custom ring enquiry"/></div>
+        <div class="fg full"><label class="fl">MESSAGE</label><textarea class="fi" rows="6" placeholder="Tell us about your requirements..."></textarea></div>
+      </div>
+      <button class="btn-primary" style="margin-top:2rem" onclick="showToast('Message sent! We reply within 24 hours.')">SEND MESSAGE</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-grid">
+    <div>
+      <div class="foot-brand">AURANOVA</div>
+      <p class="foot-desc">Crafting timeless jewellery in 22K gold and 925 sterling silver since 1890. Every piece is a testament to artisanal excellence.</p>
+      <div class="soc-links" style="margin-top:2rem"><div class="soc-link">f</div><div class="soc-link">in</div><div class="soc-link">tw</div><div class="soc-link">yt</div></div>
+    </div>
+    <div><p class="foot-title">SHOP</p><div class="foot-links"><a href="#" onclick="navigate('products')">All Products</a><a href="#" onclick="navigate('categories')">Gold Jewellery</a><a href="#" onclick="navigate('categories')">Silver Jewellery</a><a href="#" onclick="navigate('offers')">Offers & Sales</a><a href="#" onclick="navigate('products')">New Arrivals</a></div></div>
+    <div><p class="foot-title">COMPANY</p><div class="foot-links"><a href="#" onclick="navigate('about')">About Us</a><a href="#" onclick="navigate('blog')">Journal</a><a href="#" onclick="navigate('contact')">Contact</a><a href="#">Careers</a><a href="#">Privacy Policy</a></div></div>
+    <div><p class="foot-title">HELP</p><div class="foot-links"><a href="#">Shipping Info</a><a href="#">Returns Policy</a><a href="#">Size Guide</a><a href="#">Care Guide</a><a href="#">FAQ</a></div></div>
+  </div>
+  <div class="foot-bottom"><p>© 2025 AuraNova Jewellery Pvt. Ltd. All Rights Reserved.</p><p>Crafted with ♡ in Chennai, India</p></div>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════
+// REAL UNSPLASH JEWELLERY PHOTO URLs
+// These load client-side in the browser
+// ══════════════════════════════════════════════════
+const IMGS = {
+  ring:       'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=90&fit=crop',
+  necklace:   'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&q=90&fit=crop',
+  bangle:     'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&q=90&fit=crop',
+  earring:    'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&q=90&fit=crop',
+  chain:      'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=90&fit=crop',
+  pendant:    'https://images.unsplash.com/photo-1573408301185-9519f94815e7?w=600&q=90&fit=crop',
+  mangal:     'https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=600&q=90&fit=crop',
+  bracelet:   'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=600&q=90&fit=crop',
+  stud:       'https://images.unsplash.com/photo-1610703901041-ed7dd6c23d11?w=600&q=90&fit=crop',
+  silver_ring:'https://images.unsplash.com/photo-1589128777073-263566ae5e4d?w=600&q=90&fit=crop',
+  anklet:     'https://images.unsplash.com/photo-1573408301185-9519f94815e7?w=600&q=90&fit=crop',
+  toering:    'https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=600&q=90&fit=crop',
+};
+
+const CAT_IMGS = {
+  rings:    'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=85&fit=crop',
+  necklaces:'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&q=85&fit=crop',
+  silver:   'https://images.unsplash.com/photo-1589128777073-263566ae5e4d?w=600&q=85&fit=crop',
+  earrings: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&q=85&fit=crop',
+  bracelets:'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&q=85&fit=crop',
+  gold:     'https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=600&q=85&fit=crop',
+};
+
+const BLOG_IMGS = [
+  'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=600&q=80&fit=crop',
+  'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&q=80&fit=crop',
+  'https://images.unsplash.com/photo-1589128777073-263566ae5e4d?w=600&q=80&fit=crop',
+  'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&q=80&fit=crop',
+  'https://images.unsplash.com/photo-1573408301185-9519f94815e7?w=600&q=80&fit=crop',
+  'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&q=80&fit=crop',
+];
+
+// ══════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════
+const products = [
+  {id:1,name:'Royal 22K Gold Necklace',cat:'necklaces',type:'gold',price:185000,badge:'BESTSELLER',img:'necklace',desc:'Handcrafted 22-karat gold necklace with intricate filigree work. Inspired by Mughal architecture and royal Jaipur heritage.',specs:['Purity: 22K (916)','Weight: 42g','Length: 18 inches','Hallmarked: BIS 916','Stone: No Stone']},
+  {id:2,name:'Silver Moonbeam Ring',cat:'rings',type:'silver',price:8500,badge:'NEW',img:'silver_ring',desc:'925 sterling silver ring with a luminous moonstone centrepiece. Hand-set with natural moonstone and delicate silver accents.',specs:['Purity: 925 Sterling','Weight: 8g','Size: 5–10 (adjustable)','Stone: Moonstone','Certification: Yes']},
+  {id:3,name:'Diamond-cut Gold Bangle',cat:'bracelets',type:'gold',price:95000,badge:'OFFER',img:'bangle',desc:'Diamond-cut pattern gold bangle with a mirror polish finish. A timeless classic for every celebratory occasion.',specs:['Purity: 18K (750)','Weight: 28g','Inner Diameter: 58mm','Hallmarked: BIS 750','Finish: Mirror Polish']},
+  {id:4,name:'Pearl & Gold Drop Earrings',cat:'earrings',type:'gold',price:42000,badge:null,img:'earring',desc:'Elegant drop earrings featuring lustrous South Sea pearls set in 22K gold with hand-engraved detailing.',specs:['Purity: 22K (916)','Weight: 12g','Pearl: South Sea','Length: 45mm','Hook: Push Back']},
+  {id:5,name:'Silver Charm Bracelet',cat:'bracelets',type:'silver',price:12000,badge:'NEW',img:'bracelet',desc:'Delicate 925 silver bracelet with five removable charms. The perfect personalised luxury gift.',specs:['Purity: 925 Sterling','Weight: 14g','Length: 7.5 inches','Charms: 5 included','Clasp: Lobster']},
+  {id:6,name:'Kundan Gold Ring',cat:'rings',type:'gold',price:68000,badge:'BESTSELLER',img:'ring',desc:'Traditional Kundan-style ring crafted in 22K gold with glass stone settings. A piece of living heritage.',specs:['Purity: 22K (916)','Weight: 18g','Size: 5–12 (custom)','Stone: Kundan Glass','Style: Traditional']},
+  {id:7,name:'Gold Mangalsutra',cat:'necklaces',type:'gold',price:225000,badge:'PREMIUM',img:'mangal',desc:'A sacred and elegant mangalsutra in 22K gold. Handcrafted to celebrate the most important day of your life.',specs:['Purity: 22K (916)','Weight: 55g','Length: 16+2 inches','Black Beads: Yes','Certificate: BIS']},
+  {id:8,name:'Silver Anklets Pair',cat:'bracelets',type:'silver',price:6500,badge:null,img:'anklet',desc:'Traditional 925 silver anklets with tiny bells. Handcrafted by artisans in the workshops of Rajasthan.',specs:['Purity: 925 Sterling','Weight: 30g (pair)','Length: 10 inches each','Bells: Yes','Design: Rajasthani']},
+  {id:9,name:'Gold Coin Pendant',cat:'necklaces',type:'gold',price:35000,badge:'OFFER',img:'pendant',desc:'A classic Lakshmi-engraved gold coin pendant. Auspicious, beautiful, and crafted with reverence.',specs:['Purity: 22K (916)','Weight: 8g','Diameter: 22mm','Bail: Integrated','Motif: Lakshmi']},
+  {id:10,name:'925 Silver Chain',cat:'necklaces',type:'silver',price:9800,badge:'NEW',img:'chain',desc:'A minimalist 925 sterling silver box chain. Versatile, durable, and beautifully finished for everyday elegance.',specs:['Purity: 925 Sterling','Weight: 12g','Length: 20 inches','Width: 1.5mm','Clasp: Spring Ring']},
+  {id:11,name:'Gold Stud Earrings',cat:'earrings',type:'gold',price:28000,badge:null,img:'stud',desc:'Classic 22K gold ball studs with a radiant mirror finish. The foundation of every fine jewellery wardrobe.',specs:['Purity: 22K (916)','Weight: 4g','Diameter: 6mm','Back: Screw','Finish: Mirror']},
+  {id:12,name:'Silver Toe Rings Set',cat:'rings',type:'silver',price:3200,badge:null,img:'toering',desc:'Set of 4 adjustable 925 silver toe rings in classic South Indian style. A symbol of grace and tradition.',specs:['Purity: 925 Sterling','Weight: 6g (set)','Style: Open Band','Design: Floral','Count: 4 pieces']},
+];
+
+const categories = [
+  {name:'Gold Rings',count:12,filter:'rings',img:'rings'},
+  {name:'Gold Necklaces',count:18,filter:'necklaces',img:'necklaces'},
+  {name:'Silver Collections',count:25,filter:'silver',img:'silver'},
+  {name:'Gold Earrings',count:15,filter:'earrings',img:'earrings'},
+  {name:'Bracelets & Bangles',count:10,filter:'bracelets',img:'bracelets'},
+  {name:'Bridal Sets',count:8,filter:'gold',img:'gold'},
+];
+
+const offers=[
+  {id:'o1',disc:'20% OFF',title:'Monsoon Gold Sale',desc:'Get 20% off on all gold necklaces and pendants. Certificate of authenticity included.',ends:Date.now()+86400000*3,code:'GOLD20'},
+  {id:'o2',disc:'15% OFF',title:'Silver Fiesta',desc:'Flat 15% discount on the entire 925 sterling silver collection. Limited time offer.',ends:Date.now()+86400000*7,code:'SILVER15'},
+  {id:'o3',disc:'BUY 2 GET 1',title:'Earrings Bonanza',desc:'Buy any 2 pairs of earrings and receive a third pair absolutely free.',ends:Date.now()+86400000*14,code:'EAR3FREE'},
+];
+
+const blogPosts=[
+  {tag:'GOLD CARE',title:'How to Care for Your 22-Karat Gold Jewellery',exc:'Proper care ensures your gold pieces maintain their lustre for generations. Our comprehensive guide...',date:'MARCH 15, 2025',read:'5'},
+  {tag:'TRENDS',title:'2025 Jewellery Trends: What\'s Hot This Season',exc:'From layered necklaces to chunky gold bangles — we break down what\'s trending in luxury jewellery...',date:'FEBRUARY 28, 2025',read:'4'},
+  {tag:'SILVER',title:'The Art of Sterling Silver: 925 Explained',exc:'Understanding silver hallmarks, purity grades, and why 925 sterling silver is the gold standard...',date:'FEBRUARY 10, 2025',read:'6'},
+  {tag:'BUYING GUIDE',title:'How to Choose the Perfect Engagement Ring',exc:'Choosing an engagement ring is one of life\'s most meaningful decisions. Here\'s everything you need...',date:'JANUARY 20, 2025',read:'8'},
+  {tag:'INVESTMENT',title:'Gold as Investment: Jewellery vs Bullion',exc:'Should you buy gold for wear or for wealth? We explore the financial and emotional dimensions...',date:'JANUARY 5, 2025',read:'7'},
+  {tag:'CRAFTSMANSHIP',title:'Inside AuraNova: A Day in Our Workshop',exc:'Go behind the scenes at our Jaipur atelier and witness the magic of transforming raw gold into art...',date:'DECEMBER 18, 2024',read:'5'},
+];
+
+let cart=JSON.parse(localStorage.getItem('au_c')||'[]');
+let wl=JSON.parse(localStorage.getItem('au_w')||'[]');
+let slide=0,isDark=true;
+
+// ── HERO BACKGROUND ROTATION (jewellery images) ──
+const HERO_IMGS = [
+  'https://images.unsplash.com/photo-1603561591411-07134e71a2a9?w=1920&q=90&fit=crop', // gold rings on dark bg
+  'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1920&q=90&fit=crop', // gold necklace close-up
+  'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=1920&q=90&fit=crop', // gold pendant jewellery
+  'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=1920&q=90&fit=crop', // earrings luxury
+  'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=1920&q=90&fit=crop', // gold bangles
+];
+let heroIdx = 0;
+function rotateHeroBg() {
+  const el = document.getElementById('heroBgImg');
+  if (!el) return;
+  heroIdx = (heroIdx + 1) % HERO_IMGS.length;
+  el.style.opacity = '0';
+  el.style.transition = 'opacity 1.2s ease';
+  setTimeout(() => {
+    el.style.backgroundImage = `url('${HERO_IMGS[heroIdx]}')`;
+    el.style.opacity = '1';
+  }, 1200);
+}
+// Preload all hero images
+HERO_IMGS.forEach(src => { const i = new Image(); i.src = src; });
+setInterval(rotateHeroBg, 6000);
+function initThree(){
+  const cv=document.getElementById('hero-canvas'),hs=document.getElementById('heroSection');
+  if(!cv||!hs||typeof THREE==='undefined')return;
+  const W=hs.offsetWidth,H=hs.offsetHeight;
+  const rr=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true});
+  rr.setSize(W,H);rr.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  const sc=new THREE.Scene(),cm=new THREE.PerspectiveCamera(68,W/H,.1,120);cm.position.z=6;
+  const N=1000,pos=new Float32Array(N*3),col=new Float32Array(N*3);
+  const pal=[[.79,.66,.30],[.91,.83,.54],[.55,.42,.08],[1,.92,.56],[.48,.30,.04]];
+  for(let i=0;i<N;i++){pos[i*3]=(Math.random()-.5)*24;pos[i*3+1]=(Math.random()-.5)*24;pos[i*3+2]=(Math.random()-.5)*24;const c=pal[i%pal.length];col[i*3]=c[0];col[i*3+1]=c[1];col[i*3+2]=c[2];}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
+  const pts=new THREE.Points(g,new THREE.PointsMaterial({size:.055,vertexColors:true,transparent:true,opacity:.85}));sc.add(pts);
+  const tk=new THREE.Mesh(new THREE.TorusKnotGeometry(1.5,.12,160,32),new THREE.MeshPhongMaterial({color:0xC9A84C,specular:0xFFE880,shininess:300,transparent:true,opacity:.2}));sc.add(tk);
+  const rg=new THREE.Mesh(new THREE.TorusGeometry(2.2,.05,24,120),new THREE.MeshPhongMaterial({color:0xD0D0D0,specular:0xFFFFFF,shininess:400,transparent:true,opacity:.13}));rg.rotation.x=Math.PI/3;sc.add(rg);
+  sc.add(new THREE.AmbientLight(0xffffff,.35));
+  const pl1=new THREE.PointLight(0xC9A84C,4,30);pl1.position.set(8,8,8);sc.add(pl1);
+  const pl2=new THREE.PointLight(0x4466ff,2,25);pl2.position.set(-8,-5,-5);sc.add(pl2);
+  let mx=0,my=0;
+  document.addEventListener('mousemove',e=>{mx=(e.clientX/innerWidth-.5)*2;my=-(e.clientY/innerHeight-.5)*2;});
+  (function a(){requestAnimationFrame(a);const t=Date.now()*.001;pts.rotation.y=t*.035;pts.rotation.x=t*.022;tk.rotation.x=t*.18+my*.2;tk.rotation.y=t*.26+mx*.2;rg.rotation.z=t*.1;cm.position.x+=(mx*.45-cm.position.x)*.04;cm.position.y+=(my*.28-cm.position.y)*.04;cm.lookAt(0,0,0);rr.render(sc,cm);})();
+  window.addEventListener('resize',()=>{const nW=hs.offsetWidth,nH=hs.offsetHeight;cm.aspect=nW/nH;cm.updateProjectionMatrix();rr.setSize(nW,nH);});
+}
+
+// ── NAVIGATION ──
+function navigate(pg){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+pg);if(!el)return;
+  el.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});
+  if(pg==='cart')renderCart();
+  if(pg==='checkout'||pg==='payment')renderOrderSummary();
+  if(pg==='wishlist')renderWishlist();
+  if(pg==='categories')renderAllCats();
+  if(pg==='offers')renderAllOffers();
+  if(pg==='blog')renderBlog();
+  AOS.refresh();
+}
+
+// ── PRODUCT CARD ──
+function mkCard(p,container){
+  const inWL=wl.includes(p.id);
+  const d=document.createElement('div');d.className='product-card';d.setAttribute('data-aos','fade-up');
+  d.innerHTML=`
+    <div class="prod-img-wrap">
+      <img class="prod-img" src="${IMGS[p.img]||IMGS.ring}"
+           alt="${p.name}" loading="lazy"
+           onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80&fit=crop'"
+           onload="this.classList.add('loaded')"/>
+      ${p.badge?`<div class="prod-badge">${p.badge}</div>`:''}
+      <div class="prod-overlay">
+        <button class="btn-outline" style="font-size:.6rem;padding:.5rem 1rem;clip-path:none" onclick="event.stopPropagation();openModal(${p.id})"><span>QUICK VIEW</span></button>
+      </div>
+      <button class="wl-btn" onclick="event.stopPropagation();toggleWL(${p.id},this)">${inWL?'♥':'♡'}</button>
+    </div>
+    <div class="prod-info">
+      <p class="prod-cat">${p.type.toUpperCase()} · ${p.cat.toUpperCase()}</p>
+      <p class="prod-name">${p.name}</p>
+      <p class="prod-price">₹${p.price.toLocaleString('en-IN')}</p>
+    </div>
+    <div class="prod-actions">
+      <button class="btn-sm" onclick="openModal(${p.id})">VIEW</button>
+      <button class="btn-sm gold" onclick="addCart(${p.id})">ADD TO CART</button>
+    </div>`;
+  container.appendChild(d);
+}
+
+// ── INIT ALL ──
+function initAll(){
+  // Home categories
+  const hc=document.getElementById('home-categories');
+  if(hc)categories.forEach(c=>{
+    const d=document.createElement('div');d.className='cat-card';d.setAttribute('data-aos','fade-up');
+    d.innerHTML=`<img class="cat-img" src="${CAT_IMGS[c.img]||CAT_IMGS.rings}" alt="${c.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80'"/>
+    <div class="cat-overlay"></div><div class="cat-content"><h3>${c.name}</h3><p>${c.count} DESIGNS</p></div>`;
+    d.onclick=()=>{navigate('categories');showCatProds(c.filter,c.name);};hc.appendChild(d);
+  });
+  // Featured
+  const fp=document.getElementById('featured-products');if(fp)products.slice(0,4).forEach(p=>mkCard(p,fp));
+  // All products
+  const ap=document.getElementById('all-products');if(ap)products.forEach(p=>mkCard(p,ap));
+  // Offers
+  renderOffers(offers.slice(0,3),document.getElementById('home-offers'));
+}
+
+function renderAllCats(){
+  const ac=document.getElementById('all-categories');if(!ac||ac.children.length)return;
+  categories.forEach(c=>{
+    const d=document.createElement('div');d.className='cat-card';d.setAttribute('data-aos','fade-up');
+    d.innerHTML=`<img class="cat-img" src="${CAT_IMGS[c.img]||CAT_IMGS.rings}" alt="${c.name}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80'"/>
+    <div class="cat-overlay"></div><div class="cat-content"><h3>${c.name}</h3><p>${c.count} DESIGNS</p></div>`;
+    d.onclick=()=>showCatProds(c.filter,c.name);ac.appendChild(d);
+  });
+}
+
+function showCatProds(filter,name){
+  const sec=document.getElementById('cat-sec'),cont=document.getElementById('cat-products'),title=document.getElementById('cat-title');
+  if(!sec)return;sec.style.display='block';title.textContent='◆ '+name.toUpperCase()+' ◆';cont.innerHTML='';
+  products.filter(p=>p.cat===filter||p.type===filter).forEach(p=>mkCard(p,cont));
+  sec.scrollIntoView({behavior:'smooth'});AOS.refresh();
+}
+
+function renderAllOffers(){
+  const ao=document.getElementById('all-offers'),op=document.getElementById('offer-products');
+  if(ao&&!ao.children.length)renderOffers(offers,ao);
+  if(op&&!op.children.length)products.filter(p=>p.badge==='OFFER').forEach(p=>mkCard(p,op));
+}
+
+function renderOffers(list,container){
+  if(!container)return;container.innerHTML='';
+  list.forEach(o=>{
+    const d=document.createElement('div');d.className='off-card';d.setAttribute('data-aos','fade-up');
+    d.innerHTML=`<div class="off-disc">${o.disc}</div><h3 class="off-title">${o.title}</h3><p class="off-desc">${o.desc}</p>
+    <div class="off-timer" id="tmr-${o.id}"></div>
+    <div class="off-code-box"><p class="off-code-lbl">USE CODE</p><p class="off-code">${o.code}</p></div>
+    <button class="btn-primary" style="width:100%;font-size:.7rem" onclick="copyCode('${o.code}')">COPY CODE</button>`;
+    container.appendChild(d);startTimer(o.id,o.ends);
+  });
+}
+
+function renderBlog(){
+  const bg=document.getElementById('blog-grid');if(!bg||bg.children.length)return;
+  blogPosts.forEach((b,i)=>{
+    const d=document.createElement('div');d.className='blog-card';d.setAttribute('data-aos','fade-up');d.setAttribute('data-aos-delay',String((i%3)*100));
+    d.innerHTML=`<div class="blog-thumb"><img src="${BLOG_IMGS[i]}" alt="${b.title}" loading="lazy" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80'"/></div>
+    <div class="blog-body"><p class="blog-tag">${b.tag}</p><h3 class="blog-title">${b.title}</h3><p class="blog-exc">${b.exc}</p><p class="blog-meta">${b.date} · ${b.read} MIN READ</p></div>`;
+    bg.appendChild(d);
+  });
+}
+
+// ── FILTER ──
+function filterProducts(f,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('gold'));btn.classList.add('gold');
+  const c=document.getElementById('all-products');c.innerHTML='';
+  (f==='all'?products:products.filter(p=>p.cat===f||p.type===f)).forEach(p=>mkCard(p,c));AOS.refresh();
+}
+
+// ── CART ──
+function addCart(id){const ex=cart.find(i=>i.id===id);if(ex)ex.qty++;else cart.push({id,qty:1});saveCart();showToast('Added to cart! ✓');}
+function rmCart(id){cart=cart.filter(i=>i.id!==id);saveCart();renderCart();}
+function updQty(id,d){const i=cart.find(i=>i.id===id);if(!i)return;i.qty+=d;if(i.qty<=0)rmCart(id);else{saveCart();renderCart();}}
+function saveCart(){localStorage.setItem('au_c',JSON.stringify(cart));document.getElementById('cartCount').textContent=cart.reduce((a,i)=>a+i.qty,0);}
+
+function renderCart(){
+  const list=document.getElementById('cartItemsList');if(!list)return;
+  if(!cart.length){list.innerHTML=`<div style="text-align:center;padding:6rem;color:var(--tx2)"><div style="font-size:4rem;margin-bottom:1.5rem">🛒</div><p style="font-size:1.5rem;font-family:'Cormorant Garamond',serif">Your cart is empty</p><button class="btn-primary" style="margin-top:2rem" onclick="navigate('products')">EXPLORE COLLECTION</button></div>`;updTotals(0,0);return;}
+  list.innerHTML='';let sub=0;
+  cart.forEach(item=>{
+    const p=products.find(p=>p.id===item.id);if(!p)return;sub+=p.price*item.qty;
+    const d=document.createElement('div');d.className='cart-item';
+    d.innerHTML=`<div class="cart-thumb"><img src="${IMGS[p.img]||IMGS.ring}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80'"/></div>
+    <div><p class="ci-cat">${p.type.toUpperCase()}</p><p class="ci-name">${p.name}</p>
+    <div class="ci-qty"><button class="qty-btn" onclick="updQty(${p.id},-1)">−</button><span style="min-width:20px;text-align:center">${item.qty}</span><button class="qty-btn" onclick="updQty(${p.id},1)">+</button><button style="background:none;border:none;cursor:pointer;color:var(--tx2);font-size:.7rem;margin-left:1rem" onclick="rmCart(${p.id})">REMOVE</button></div></div>
+    <p class="ci-price">₹${(p.price*item.qty).toLocaleString('en-IN')}</p>`;
+    list.appendChild(d);
+  });updTotals(sub,sub*.03);
+}
+
+function updTotals(sub,gst){
+  const f=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+  ['subtotal','co-subtotal'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=f(sub);});
+  ['gst','co-gst'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=f(gst);});
+  ['cartTotal','co-total','pay-total'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=f(sub+gst);});
+}
+
+function renderOrderSummary(){
+  ['checkoutItems','paymentItems'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;el.innerHTML='';let sub=0;
+    cart.forEach(item=>{const p=products.find(p=>p.id===item.id);if(!p)return;sub+=p.price*item.qty;const d=document.createElement('div');d.className='sum-row';d.innerHTML=`<span style="font-size:.75rem">${p.name} ×${item.qty}</span><span>₹${(p.price*item.qty).toLocaleString('en-IN')}</span>`;el.appendChild(d);});
+    updTotals(sub,sub*.03);
+  });
+}
+
+// ── WISHLIST ──
+function toggleWL(id,btn){
+  if(wl.includes(id)){wl=wl.filter(w=>w!==id);if(btn)btn.textContent='♡';showToast('Removed from wishlist');}
+  else{wl.push(id);if(btn)btn.textContent='♥';showToast('Added to wishlist! ♥');}
+  localStorage.setItem('au_w',JSON.stringify(wl));
+}
+function renderWishlist(){
+  const g=document.getElementById('wishlistGrid');if(!g)return;
+  if(!wl.length){g.innerHTML=`<div style="text-align:center;padding:6rem;color:var(--tx2)"><div style="font-size:4rem;margin-bottom:1.5rem">♡</div><p style="font-size:1.5rem;font-family:'Cormorant Garamond',serif">Your wishlist is empty</p><button class="btn-primary" style="margin-top:2rem" onclick="navigate('products')">DISCOVER PIECES</button></div>`;return;}
+  g.innerHTML='';const cont=document.createElement('div');cont.className='product-grid';wl.forEach(id=>{const p=products.find(p=>p.id===id);if(p)mkCard(p,cont);});g.appendChild(cont);AOS.refresh();
+}
+
+// ── MODAL ──
+function openModal(id){
+  const p=products.find(p=>p.id===id);if(!p)return;
+  document.getElementById('modalContent').innerHTML=`
+    <div class="modal-img-wrap">
+      <img src="${IMGS[p.img]||IMGS.ring}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;display:block"
+           onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&q=80'"/>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-cat">${p.type.toUpperCase()} · ${p.cat.toUpperCase()}</p>
+      <h2 class="modal-name">${p.name}</h2>
+      <p class="modal-price">₹${p.price.toLocaleString('en-IN')}</p>
+      <p class="modal-desc">${p.desc}</p>
+      <div class="modal-specs">
+        <p style="font-size:.6rem;letter-spacing:3px;color:var(--g);margin-bottom:1rem">SPECIFICATIONS</p>
+        ${p.specs.map(s=>`<p><span class="spec-k">${s.split(':')[0]}:</span>${s.includes(':')?s.slice(s.indexOf(':')+1):''}</p>`).join('')}
+      </div>
+      <div style="display:flex;gap:1rem;margin-top:2.5rem">
+        <button class="btn-primary" style="flex:1" onclick="addCart(${p.id});closeModal()">ADD TO CART</button>
+        <button class="btn-outline" style="padding:.9rem 1.5rem;clip-path:none" onclick="toggleWL(${p.id},this)"><span>${wl.includes(p.id)?'♥':'♡'}</span></button>
+      </div>
+    </div>`;
+  document.getElementById('productModal').classList.add('open');
+}
+function closeModal(){document.getElementById('productModal').classList.remove('open');}
+document.getElementById('productModal').addEventListener('click',e=>{if(e.target.id==='productModal')closeModal();});
+
+// ── PAYMENT ──
+function selPay(el){document.querySelectorAll('.pm-card').forEach(m=>m.classList.remove('sel'));el.classList.add('sel');}
+function placeOrder(){cart=[];saveCart();navigate('thankyou');const n=document.getElementById('orderNumber');if(n)n.textContent='ORDER #AUR-2025-'+Math.floor(Math.random()*9000+1000);}
+
+// ── TIMER ──
+function startTimer(id,end){
+  function tick(){const el=document.getElementById('tmr-'+id);if(!el)return;const d=end-Date.now();if(d<=0){el.innerHTML='<p style="color:var(--g);font-size:.78rem;letter-spacing:2px">OFFER EXPIRED</p>';return;}const dd=Math.floor(d/86400000),hh=Math.floor((d%86400000)/3600000),mm=Math.floor((d%3600000)/60000),ss=Math.floor((d%60000)/1000);el.innerHTML=`<div class="timer-box"><span>${dd}</span><small>DAYS</small></div><div class="timer-box"><span>${String(hh).padStart(2,'0')}</span><small>HRS</small></div><div class="timer-box"><span>${String(mm).padStart(2,'0')}</span><small>MIN</small></div><div class="timer-box"><span>${String(ss).padStart(2,'0')}</span><small>SEC</small></div>`;}
+  tick();setInterval(tick,1000);
+}
+
+// ── THEME ──
+function toggleTheme(){isDark=!isDark;document.body.setAttribute('data-theme',isDark?'dark':'light');document.getElementById('themeBtn').textContent=isDark?'☀ LIGHT':'☾ DARK';}
+
+// ── SLIDER ──
+function goSlide(n){slide=n;document.getElementById('testTrack').style.transform=`translateX(-${n*100}%)`;document.querySelectorAll('.sdot').forEach((d,i)=>d.classList.toggle('active',i===n));}
+setInterval(()=>goSlide((slide+1)%3),5500);
+
+// ── TOAST ──
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3200);}
+function copyCode(c){try{navigator.clipboard.writeText(c);}catch(e){}showToast(`Code "${c}" copied!`);}
+
+// ── SEARCH ──
+function openSearch(){document.getElementById('searchOv').classList.add('open');setTimeout(()=>document.getElementById('searchInput').focus(),300);}
+function closeSearch(){document.getElementById('searchOv').classList.remove('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSearch();});
+
+// ── PARALLAX ──
+function initParallax(){
+  window.addEventListener('scroll',()=>{
+    document.querySelectorAll('.pb-bg').forEach(bg=>{
+      const r=bg.parentElement.getBoundingClientRect();
+      bg.style.transform=`translateY(${(r.top/innerHeight)*28}%)`;
+    });
+  });
+}
+
+// ── GSAP ──
+function initGSAP(){
+  if(typeof gsap==='undefined'||typeof ScrollTrigger==='undefined')return;
+  gsap.registerPlugin(ScrollTrigger);
+  [{id:'stat1',v:134,s:''},{id:'stat2',v:50000,s:'+'},{id:'stat3',v:2000,s:''},{id:'stat4',v:48,s:''}].forEach(({id,v,s})=>{
+    const n=document.getElementById(id);if(!n)return;
+    ScrollTrigger.create({trigger:n,once:true,onEnter:()=>{let o={n:0};gsap.to(o,{n:v,duration:2.8,ease:'power2.out',onUpdate:()=>{n.textContent=Math.floor(o.n).toLocaleString('en-IN')+s;}});} });
+  });
+}
+
+// ── MOBILE NAV ──
+function toggleMobileNav(){document.getElementById('mobileNav').classList.toggle('open');}
+function closeMobileNav(){document.getElementById('mobileNav').classList.remove('open');}
+
+// ── BOOT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  setTimeout(()=>{
+    document.getElementById('loader').classList.add('hidden');
+    initThree();
+    initAll();
+    renderBlog();
+    initParallax();
+    initGSAP();
+    saveCart();
+    AOS.init({duration:950,easing:'ease-out-cubic',once:true,offset:55});
+  }, 2000);
+});
+</script>
+</body>
+</html>
